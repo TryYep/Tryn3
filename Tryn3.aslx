@@ -1,0 +1,144 @@
+<!--Saved by Quest 5.6.5783.24153-->
+<asl version="550">
+  <include ref="English.aslx" />
+  <include ref="Core.aslx" />
+  <game name="Tryn3">
+    <gameid>c8866835-5721-4061-907d-0036fc46857e</gameid>
+    <version>1.0</version>
+    <firstpublished>2016</firstpublished>
+    <gridmap />
+    <feature_pictureframe />
+    <showhealth />
+    <feature_limitinventory />
+    <feature_lightdark />
+    <feature_asktell />
+    <author>Trynidy Williams</author>
+  </game>
+  <object name="Opening Room">
+    <inherit name="editor_room" />
+    <usedefaultprefix type="boolean">false</usedefaultprefix>
+    <description><![CDATA[Welcome! I'm Trynidy, the game designer. This is the start room. GHAI onto whichever world you decide. There are three; steampunk, mythical medieval, and a terrible future for the human race. Go on and decide. You can skip to other worlds from time to time so nothing is perminent. Good luck!<br/><br/><b>Controls</b>:<br/><br/>Click on blue words to select whatever you need to do to that object.<br/>Click your map to move. <br/>Click you inventory to use objects.<br/><br/>Ahead is the <i>future of the human race</i>. The world is dying and so are we. You can save the world or doom it.<br/><br/>To the left is a world <i>filled with creatures that eat humans</i>. They can attack during the day or night. Beware.<br/><br/>To the right is a <i>medival world</i> where the myths we fear are real. Good luck at surviving.]]></description>
+    <descprefix>You are in the </descprefix>
+    <objectslistprefix type="string"></objectslistprefix>
+    <object name="player">
+      <inherit name="editor_object" />
+      <inherit name="editor_player" />
+    </object>
+    <exit alias="north" to="Future">
+      <inherit name="northdirection" />
+    </exit>
+    <exit alias="west" to="Steampunk">
+      <inherit name="westdirection" />
+    </exit>
+    <exit alias="east" to="Mythical">
+      <inherit name="eastdirection" />
+    </exit>
+  </object>
+  <object name="Future">
+    <inherit name="editor_room" />
+    <descprefix>You are in the </descprefix>
+    <description><![CDATA[<br/>This is the future. It's 2198 and half of the human race is under the last ocean left on Earth. They've forsaken their kin and are attempting to fix the world. Those on land are trapped in a single city and smaller towns around it. There is little to no animals left. Trees and plants are only on protected, owned lands. These lands are protected with electric fences and gun fire. Will you save the world or destory it?<br/><br/>Move north to begin. There will be no way back for sometime so choose carefully.]]></description>
+    <exit alias="south" to="Opening Room">
+      <inherit name="southdirection" />
+    </exit>
+    <exit alias="southwest" to="Steampunk">
+      <inherit name="southwestdirection" />
+    </exit>
+    <object name="Wasteland">
+      <inherit name="editor_room" />
+      <description>A boring wasteland. A small shack is at your right. A looming city far in the distance north. Wasteland to the left.</description>
+      <descprefix>You are in </descprefix>
+      <firstenter type="script">
+        msg ("A boring wasteland. A small shack is at your right. A looming city far in the distance north. Wasteland to the left. This is the start of your journey.")
+      </firstenter>
+      <exit alias="east" to="Shack">
+        <inherit name="eastdirection" />
+      </exit>
+      <exit alias="west" to="Nothing">
+        <inherit name="westdirection" />
+      </exit>
+      <exit alias="north" to="Near city">
+        <inherit name="northdirection" />
+      </exit>
+    </object>
+    <object name="Shack">
+      <inherit name="editor_room" />
+      <descprefix>You are in a </descprefix>
+      <description>A small shack, it's full of sand and has a small bed in the corner. It's shealther from the outside at least.</description>
+      <object name="Bed">
+        <inherit name="editor_object" />
+        <lie type="script">
+          IncreaseHealth (10)
+        </lie>
+      </object>
+      <exit alias="west" to="Wasteland">
+        <inherit name="westdirection" />
+      </exit>
+    </object>
+    <object name="Near city">
+      <inherit name="editor_room" />
+      <exit alias="south" to="Wasteland">
+        <inherit name="southdirection" />
+      </exit>
+    </object>
+    <object name="Nothing">
+      <inherit name="editor_room" />
+      <usedefaultprefix />
+      <description>There's only sand dunes here. One scraggly, black tree is left. There's something at its base.</description>
+      <beforeenter type="script">
+      </beforeenter>
+      <onexit type="script">
+      </onexit>
+      <turnscript>
+        <enabled type="boolean">false</enabled>
+      </turnscript>
+      <object name="Pistol">
+        <inherit name="editor_object" />
+      </object>
+      <exit alias="east" to="Wasteland">
+        <inherit name="eastdirection" />
+      </exit>
+    </object>
+    <exit alias="north" to="Wasteland">
+      <inherit name="northdirection" />
+    </exit>
+    <exit alias="southeast" to="Mythical">
+      <inherit name="southeastdirection" />
+    </exit>
+  </object>
+  <object name="Steampunk">
+    <inherit name="editor_room" />
+    <description><![CDATA[<br/>In this world there is creatures that eat humans. They look and talk like us. They eat during the day and during the night;the light cannot protect you here. Will you doom these creautres for eating? Or will you help them since the only thing they can eat is humans? It is up to you to side with the side you feel is morally right. Good luck.<br/><br/>Move east to begin. There will be no way back for sometime so choose carefully.]]></description>
+    <exit alias="east" to="Opening Room">
+      <inherit name="eastdirection" />
+    </exit>
+    <exit alias="northeast" to="Future">
+      <inherit name="northeastdirection" />
+    </exit>
+  </object>
+  <object name="Mythical">
+    <inherit name="editor_room" />
+    <description><![CDATA[<br/>This is a mideval world. Myths like mermaids and dragons ae real here. You have only the simplest tools and medication at your disposal. Go speak to the King whenever you desire to start your quest. Good luck! <br/><br/>Move east to begin. There will be no way back for sometime so choose carefully.]]></description>
+    <exit alias="west" to="Opening Room">
+      <inherit name="westdirection" />
+    </exit>
+    <exit alias="northwest" to="Future">
+      <inherit name="northwestdirection" />
+    </exit>
+    <exit alias="east" to="Forest">
+      <inherit name="eastdirection" />
+    </exit>
+    <object name="Forest">
+      <inherit name="editor_room" />
+      <description><![CDATA[A large, beautfiul forest. You're now in the past.<br/><br/>Pick up the items here and go forth. Do as you please.]]></description>
+      <object name="Wooden Bow">
+        <inherit name="editor_object" />
+        <look>Standard wooden bow. Aka Starter bow</look>
+        <listalias>Wooden Bow</listalias>
+        <take />
+        <feature_usegive />
+        <use />
+      </object>
+    </object>
+  </object>
+</asl>
