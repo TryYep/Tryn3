@@ -44,62 +44,7 @@
     <exit alias="southwest" to="Steampunk">
       <inherit name="southwestdirection" />
     </exit>
-    <object name="Wasteland">
-      <inherit name="editor_room" />
-      <description>A boring wasteland. A small shack is at your right. A looming city far in the distance north. Wasteland to the left.</description>
-      <descprefix>You are in </descprefix>
-      <firstenter type="script">
-        msg ("A boring wasteland. A small shack is at your right. A looming city far in the distance north. Wasteland to the left. This is the start of your journey.")
-      </firstenter>
-      <exit alias="east" to="Shack">
-        <inherit name="eastdirection" />
-      </exit>
-      <exit alias="west" to="Nothing">
-        <inherit name="westdirection" />
-      </exit>
-      <exit alias="north" to="Near city">
-        <inherit name="northdirection" />
-      </exit>
-    </object>
-    <object name="Shack">
-      <inherit name="editor_room" />
-      <descprefix>You are in a </descprefix>
-      <description>A small shack, it's full of sand and has a small bed in the corner. It's shealther from the outside at least.</description>
-      <object name="Bed">
-        <inherit name="editor_object" />
-        <lie type="script">
-          IncreaseHealth (10)
-        </lie>
-      </object>
-      <exit alias="west" to="Wasteland">
-        <inherit name="westdirection" />
-      </exit>
-    </object>
-    <object name="Near city">
-      <inherit name="editor_room" />
-      <exit alias="south" to="Wasteland">
-        <inherit name="southdirection" />
-      </exit>
-    </object>
-    <object name="Nothing">
-      <inherit name="editor_room" />
-      <usedefaultprefix />
-      <description>There's only sand dunes here. One scraggly, black tree is left. There's something at its base.</description>
-      <beforeenter type="script">
-      </beforeenter>
-      <onexit type="script">
-      </onexit>
-      <turnscript>
-        <enabled type="boolean">false</enabled>
-      </turnscript>
-      <object name="Pistol">
-        <inherit name="editor_object" />
-      </object>
-      <exit alias="east" to="Wasteland">
-        <inherit name="eastdirection" />
-      </exit>
-    </object>
-    <exit alias="north" to="Wasteland">
+    <exit alias="north" to="Wasteland_f">
       <inherit name="northdirection" />
     </exit>
     <exit alias="southeast" to="Mythical">
@@ -140,5 +85,58 @@
         <use />
       </object>
     </object>
+  </object>
+  <object name="Wasteland_f">
+    <inherit name="editor_room" />
+    <alias>Wasteland</alias>
+    <description>A boring wasteland. A small shack is at your right. A looming city far in the distance north. Wasteland to the left.</description>
+    <descprefix>You are in </descprefix>
+    <firstenter type="script">
+      msg ("A boring wasteland. A small shack is at your right. A looming city far in the distance north. Wasteland to the left. This is the start of your journey.")
+    </firstenter>
+    <exit alias="east" to="Shack">
+      <inherit name="eastdirection" />
+    </exit>
+    <exit alias="west" to="Nothing">
+      <inherit name="westdirection" />
+    </exit>
+  </object>
+  <object name="Shack">
+    <inherit name="editor_room" />
+    <descprefix>You are in a </descprefix>
+    <description>A small shack, it's full of sand and has a small bed in the corner. It's shealther from the outside at least.</description>
+    <object name="Bed">
+      <inherit name="editor_object" />
+      <lie type="script">
+        IncreaseHealth (10)
+      </lie>
+    </object>
+    <exit alias="west" to="Wasteland_f">
+      <inherit name="westdirection" />
+    </exit>
+  </object>
+  <object name="Near city">
+    <inherit name="editor_room" />
+    <exit alias="south" to="Wasteland_f">
+      <inherit name="southdirection" />
+    </exit>
+  </object>
+  <object name="Nothing">
+    <inherit name="editor_room" />
+    <usedefaultprefix />
+    <description>There's only sand dunes here. One scraggly, black tree is left. There's something at its base.</description>
+    <beforeenter type="script">
+    </beforeenter>
+    <onexit type="script">
+    </onexit>
+    <turnscript>
+      <enabled type="boolean">false</enabled>
+    </turnscript>
+    <object name="Pistol">
+      <inherit name="editor_object" />
+    </object>
+    <exit alias="east" to="Wasteland_f">
+      <inherit name="eastdirection" />
+    </exit>
   </object>
 </asl>
