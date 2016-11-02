@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<library>
+
+  <!--
+  This is just a way to incorporate all the different parts of the combat system.
+  -->
+
+
+  <!--
+  This is has all the stuff that is not elsewhere!
+  -->
+  <include ref="CombatStuff.xml" />
+
+
+  <!--
+  This file defines the numerous types.
+  -->
+  <include ref="CombatTypes.xml" />
+
+
+  <!--
+  This sets up the new Combat tab.
+  -->
+  <include ref="CombatTabs.xml" />
+
+
+  <!--
+  This handles the shopping experience (and has the shop_location type and the merchandise type, but not the tab controls for them).
+  Uses ScopeLib, but otherwise can be used on its own.
+  -->
+  <include ref="ShopLib.xml" />
+
+
+  <!--
+  This adds the second inventory pane (together with InvPane2.js); by Jay Nabonne.
+  Can be used on its own (but with InvPane2.js).
+  -->
+  <include ref="InvPane2.xml" />
+
+
+  <!--
+  Allows commands to use objects in different scopes (used when shopping to access objuects in the shop's stock
+  and when casting spells, which are also held in a special location).
+  Can be used on its own.
+  -->
+  <include ref="ScopeLib.xml" />
+
+
+  <!--
+  This handles the levelling experience.
+  Can be used on its own.
+  -->
+  <include ref="LevelLib.xml" />
+
+</library>

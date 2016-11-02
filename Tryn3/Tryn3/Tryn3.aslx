@@ -133,8 +133,6 @@
     </turnscript>
     <object name="Pistol">
       <inherit name="editor_object" />
-      <inherit name="weapon" />
-      <damagedicenumber type="int">1</damagedicenumber>
     </object>
     <exit alias="east" to="f_Wasteland">
       <inherit name="eastdirection" />
@@ -146,24 +144,11 @@
     <description><![CDATA[A large, beautfiul forest. You're now in the past.<br/><br/>Pick up the items here and go forth. Do as you please.]]></description>
     <object name="Wooden Bow">
       <inherit name="editor_object" />
-      <inherit name="weapon" />
       <look>Standard wooden bow. Aka Starter bow</look>
       <listalias>Wooden Bow</listalias>
       <take />
       <feature_usegive />
       <use />
-      <attackbonus type="int">3</attackbonus>
-      <damagebonus type="int">3</damagebonus>
-      <damagedicenumber type="int">5</damagedicenumber>
-      <twohanded />
-    </object>
-    <object name="Werewolf">
-      <inherit name="editor_object" />
-      <inherit name="female" />
-      <inherit name="monster" />
-      <level type="int">1</level>
-      <attackonsight />
-      <guarding />
     </object>
   </object>
 </asl>

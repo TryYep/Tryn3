@@ -1,0 +1,935 @@
+<?xml version="1.0"?>
+<library>
+
+
+
+
+
+  <type name="spell">
+    <displayverbs type="stringlist">
+      <value>Learn</value>
+    </displayverbs>
+    <inventoryverbs type="stringlist">
+      <value>Learn</value>
+    </inventoryverbs>
+    <level type="int">0</level>
+    <lastsfor type="int">0</lastsfor>
+    <drop type="boolean">false</drop>
+    <take type="boolean">false</take>
+    <skipmultitake type="boolean">true</skipmultitake>
+    <terminate type="script"></terminate>
+    <spelleffect type="script"></spelleffect>
+    <cannothold type="boolean">false</cannothold>
+    
+    <usedefaultprefix type="boolean">false</usedefaultprefix>
+    <learn type="script"><![CDATA[
+      if (this.parent = spells_known) {
+        msg ("Er, you already know that one!")
+      }
+      else if ((game.pov.intelligence + game.pov.magicbonus) < this.level) {
+        msg ("That spell is way out of your league. Perhaps if you were more intelligent...")
+      }
+      else {
+        this.parent = spells_known
+        this.inventoryverbs = Split ("Cast", " ")
+        msg (DynamicTemplate("SpellLearnt", this))
+        SetInventory2 (GetDirectChildren (spells_known))        
+      }
+    ]]></learn>
+
+    <precast type="script"><![CDATA[
+      // Iterate through all objects in the room
+      // Apply attack to those with the monster type that are not dead
+      if ((game.pov.intelligence + game.pov.magicbonus) < this.level) {
+        msg ("You concentrate really hard, trying to cast <i>" + GetDisplayAlias(this) + " but nothing happens. Perhaps if you were a bit more intelligent, you might have better success.")
+      }
+      else if (game.pov.currentspell = this) {
+        msg ("You are about to cast <i>" + GetDisplayAlias(this) + " when you realise it is already active!")
+      }
+      else {
+        do (this, "cast")
+      }
+    ]]></precast>
+    
+  </type>
+
+
+
+
+
+
+
+
+
+  <type name="attackspell">
+    <inherit name="spell"/>
+    
+    <cast type="script"><![CDATA[
+      // Iterate through all objects in the room
+      // Apply attack to those with the monster type that are not dead
+        DescribeCast (this)
+        SneakUpdate (4)
+        flag = False
+        foreach (obj, ScopeVisibleNotHeld ()) {
+          if (DoesInherit (obj, "monster") and not GetBoolean (obj, "dead")) {
+            SpellAttackMonster (obj, this)
+            flag = True
+          }
+        }
+        if (not flag) {
+          msg ("... No monsters present")
+        }
+        CancelSpell ()
+    ]]></cast>
+    
+  </type>
+
+
+
+
+
+
+
+
+  <type name="banishingspell">
+    <inherit name="spell"/>
+    
+    <cast type="script"><![CDATA[
+      // Iterate through all objects in the room
+      // Apply attack to those with the monster type that are not dead
+        DescribeCast (this)
+        SneakUpdate (4)
+        flag = False
+        foreach (obj, ScopeVisibleNotHeld ()) {
+          if (DoesInherit (obj, this.target)) {
+            msg (Replace(this.description, "%", GetDisplayAlias(obj)))
+            destroy (obj.name)
+            flag = True
+          }
+        }
+        if (not flag) {
+          msg ("... No affected monsters present")
+        }
+        CancelSpell ()
+    ]]></cast>
+    
+  </type>
+
+
+
+
+
+
+
+  <type name="nonattackspell">
+    <inherit name="spell"/>
+    <cast type="script"><![CDATA[
+      DescribeCast (this)
+      SneakUpdate (2)
+      CancelSpell ()
+      do (this, "spelleffect")
+    ]]></cast>
+  </type>
+
+
+
+
+
+
+
+  <type name="lastingspell">
+    <inherit name="spell"/>
+    <cast type="script">
+      DescribeCast (this)
+      StartMagicEffect(this)
+    </cast>
+  </type>
+
+
+
+
+
+
+
+
+
+  <!-- =================================================== -->
+  <!-- Spellbook -->
+
+
+    <type name="spell_book">
+      <inherit name="container_open" />
+      <open />
+      <close />
+      <transparent type="boolean">false</transparent>
+      <hidechildren />
+      <isopen type="boolean">false</isopen>
+      <listchildren />
+      <listchildrenprefix>Inside you find these spells:</listchildrenprefix>
+      <take />
+      <inventoryverbs type="stringlist">
+        <value>Look at</value>
+        <value>Use</value>
+        <value>Drop</value>
+        <value>Open</value>
+        <value>Close</value>
+      </inventoryverbs>
+      <read type="script">
+        TryOpenClose (true, this)
+      </read>
+      <look type="script">
+        TryOpenClose (true, this)
+      </look>
+      <feature_container />
+      <openmsg>You open the spellbook.</openmsg>
+      <closemsg>You close the spellbook.</closemsg>
+    </type>
+
+
+
+
+
+
+
+
+
+  <!-- =================================================== -->
+  <!-- Potions -->
+
+
+
+  <type name="potion">
+    <inherit name="merchandise"/>
+    <potionlasts type="int">7</potionlasts>
+    <cannothold type="boolean">false</cannothold>
+    <take />
+
+    <drink type="script">
+      msg ("You drink the " + GetDisplayAlias(this))
+      this.parent = activepotions
+      StartMagicEffect(this)
+    </drink>
+      
+    <inventoryverbs type="stringlist">
+      <value>Look at</value>
+      <value>Drop</value>
+      <value>Drink</value>
+      <value>Sell</value>
+    </inventoryverbs>
+  </type>
+
+
+  <type name="healingpotion">
+    <inherit name="merchandise"/>
+    <potionlasts type="int">0</potionlasts>
+    <price type="int">20</price>
+    <alias>Healing potion</alias>
+    <cannothold type="boolean">false</cannothold>
+    <take />
+
+    <drink type="script">
+      msg ("You drink the healing potion, and suddenly you feel fine.")
+      game.pov.hitpoints = CalcFullHits ()
+      destroy(this.name)
+    </drink>
+      
+    <inventoryverbs type="stringlist">
+      <value>Look at</value>
+      <value>Drop</value>
+      <value>Drink</value>
+      <value>Sell</value>
+    </inventoryverbs>
+  </type>
+
+
+
+
+
+
+
+
+
+
+  <!-- =================================================== -->
+  <!-- Magic items -->
+  <!-- Not properly implemented!!! -->
+  <!-- There is a big issue here about wearing a limited number of rings, an amulet, a belt, etc...  -->
+
+
+
+
+  <type name="magic_item">
+    <inherit name="merchandise"/>
+    <level type="int">0</level>
+    <inventoryverbs type="stringlist">
+      <value>Look at</value>
+      <value>Drop</value>
+      <value>Wear</value>
+      <value>Sell</value>
+    </inventoryverbs>
+    <take />
+    
+    <wear type="script"><![CDATA[
+      if (not game.pov = this.parent) {
+        msg ("You are not holding " + GetDisplayAlias (this))
+      }
+      else if (not GetAttribute (game.pov, "wornas" + this.worn) = null) {
+        other = Get (game.pov, "wornas" + this.worn)
+        msg ("You are already wearing " + GetDisplayAlias(other) + ".")
+      }
+      else {
+        msg ("You put on " + GetDisplayAlias (this))
+        set (game.pov, "wornas" + this.worn, this)
+        this.inventoryverbs = Split ("Look at;Remove", ";")
+        this.listalias = GetDisplayAlias (this) + " (worn)"
+        this.drop = false
+        do (this, "puttingon")
+      }
+    ]]></wear>
+    
+    <remove type="script">
+      if (not game.pov = this.parent) {
+        msg ("You do not have " + GetDisplayAlias (this))
+      }
+      else if (not GetAttribute (game.pov, "wornas" + this.worn) = this) {
+        msg ("You are not wearing " +  GetDisplayAlias (this) + ".")
+      }
+      else {
+        msg ("You take off " + GetDisplayAlias (this))
+        set (game.pov, "wornas" + this.worn, null)
+        this.inventoryverbs = Split ("Look at;Drop;Wear", ";")
+        this.listalias = GetDisplayAlias (this)
+        do (this, "takingoff")
+      }
+    </remove>
+    
+    <ondrop type="script">
+      if (GetAttribute (game.pov, "wornas" + this.worn) = this) {
+        set (game.pov, "wornas" + this.worn, null)
+        this.inventoryverbs = Split ("Look at;Drop;Wear", ";")
+        this.listalias = GetDisplayAlias (this)
+        do (this, "takingoff")
+      }
+    </ondrop>
+    
+  </type>
+
+
+
+
+
+
+
+
+
+  <!-- =================================================== -->
+  <!-- Armour -->
+
+
+
+
+  <type name="armour">
+    <inherit name="merchandise"/>
+    <level type="int">0</level>
+    <inventoryverbs type="stringlist">
+      <value>Look at</value>
+      <value>Drop</value>
+      <value>Wear</value>
+      <value>Sell</value>
+    </inventoryverbs>
+    <take />
+    
+    <wear type="script"><![CDATA[
+      if (not game.pov = this.parent) {
+        msg ("You are not holding " + GetDisplayAlias (this))
+      }
+      else if (not game.pov.armourobject = null) {
+        msg ("You are already wearing " + GetDisplayAlias (game.pov.armourobject))
+      }
+      else {
+        if (ArmourTooHeavy(this.level)) {
+          msg ("You  struggle to put on " + GetDisplayAlias (this) + ", but eventually it is on. You realise you will struggle to actually fight whilst wearing it, however.")
+        }
+        else {
+          msg ("You  quickly put on " + GetDisplayAlias (this) + ".")
+        }
+        game.pov.armourobject = this
+        game.pov.armour = this.level
+        this.inventoryverbs = Split ("Look at;Remove", ";")
+        //this.drop = false
+        this.listalias = GetDisplayAlias (this) + " (worn)"
+      }
+    ]]></wear>
+    
+    <remove type="script">
+      if (not game.pov.armourobject = this) {
+        msg ("You are not wearing " + GetDisplayAlias (game.pov.armour))
+      }
+      else {
+        msg ("You quickly take off " + GetDisplayAlias (this))
+        game.pov.armourobject = null
+        game.pov.armour = 0
+        this.inventoryverbs = Split ("Look at;Drop;Wear;Sell", ";")
+        //this.drop = true
+        this.listalias = GetDisplayAlias (this)
+      }
+    </remove>
+    
+    <ondrop type="script">
+      if (game.pov.armourobject = this) {
+        game.pov.armourobject = null
+        game.pov.armour = 0
+        this.inventoryverbs = Split ("Look at;Drop;Wear;Sell", ";")
+        //this.drop = true
+        this.listalias = GetDisplayAlias (this)
+      }
+    </ondrop>
+    
+    <drop2 type="script">
+      if (game.pov.armourobject = this) {
+        msg ("Cannot drop armour while it is worn.")
+      }
+      else {
+        msg ("Dropped.")
+        this.parent = game.pov.parent
+      }
+    </drop2>
+    
+  </type>
+
+
+
+
+
+
+
+
+
+
+  <!-- =================================================== -->
+  <!-- Shields -->
+
+
+  <type name="shield">
+    <inherit name="merchandise"/>
+    <level type="int">1</level>
+    <take />
+    <inventoryverbs type="stringlist">
+      <value>Look at</value>
+      <value>Drop</value>
+      <value>Equip</value>
+      <value>Sell</value>
+    </inventoryverbs>
+    
+    <equip type="script"><![CDATA[
+      if (not this.parent = game.pov) {
+        msg ("You don't have it.")
+      }
+      else if (game.pov.equipped.twohanded) {
+        msg ("You cannot use a shield with a two-handed weapon.")
+      }
+      else {
+        if (not game.pov.shield = null) {
+          msg ("You put away your " + GetDisplayAlias(game.pov.shield) + " and hold your " + GetDisplayAlias (this) + " ready.")
+        }
+        else {
+          msg ("You hold your " + GetDisplayAlias (this) + " ready.")
+        }
+        game.pov.shield = this
+        this.inventoryverbs = Split ("Look at;Drop;Unequip", ";")
+        //UpdateWeapon
+      }
+    ]]></equip>
+    
+    <unequip type="script"><![CDATA[
+      if (this.parent = game.pov) {
+        msg ("You put away your " + GetDisplayAlias(game.pov.equipped) + ".")
+        game.pov.shield = null
+        this.inventoryverbs = Split ("Look at;Drop;Equip;Sell", ";")
+        //UpdateWeapon
+      }
+      else {
+        msg ("You don't have it.")
+      }
+    ]]></unequip>
+    
+    <ondrop type="script">
+      if (game.pov.equipped = this) {
+        game.pov.shield = null
+        this.inventoryverbs = Split ("Look at;Drop;Equip;Sell", ";")
+        //UpdateWeapon
+      }
+    </ondrop>
+    
+  </type>
+
+
+
+
+
+
+  <!-- =================================================== -->
+  <!-- Weapons -->
+
+
+
+
+  <type name="weapon">
+    <inherit name="merchandise"/>
+    <attackbonus type="int">0</attackbonus>
+    <damagebonus type="int">0</damagebonus>
+    <damagedicenumber type="int">1</damagedicenumber>
+    <damagedicesides type="int">4</damagedicesides>
+    <twohanded type="boolean">false</twohanded>
+    <nonweapon type="boolean">false</nonweapon>
+    <take />
+    <inventoryverbs type="stringlist">
+      <value>Look at</value>
+      <value>Drop</value>
+      <value>Equip</value>
+      <value>Sell</value>
+    </inventoryverbs>
+    
+    <equip type="script"><![CDATA[
+      if (not this.parent = game.pov) {
+        msg ("You don't have it.")
+      }
+      else if (this.twohanded and not game.pov.shield = null) {
+        msg("You cannot use a two-handed weapon with a shield.")
+      }
+      else {      
+        if (not game.pov.equipped = fists and not game.pov.equipped = null) {
+          msg ("You put away your " + GetDisplayAlias(game.pov.equipped) + " and draw your " + GetDisplayAlias (this) + ".")
+        }
+        else {
+          msg ("You draw your " + GetDisplayAlias (this) + ".")
+        }
+        game.pov.equipped = this
+        this.inventoryverbs = Split ("Look at;Drop;Unequip", ";")
+        UpdateWeapon
+      }
+    ]]></equip>
+    
+    <unequip type="script"><![CDATA[
+      if (this.parent = game.pov) {
+        msg ("You put away your " + GetDisplayAlias(game.pov.equipped) + ".")
+        game.pov.equipped = fists
+        this.inventoryverbs = Split ("Look at;Drop;Equip;Sell", ";")
+        UpdateWeapon
+      }
+      else {
+        msg ("You don't have it.")
+      }
+    ]]></unequip>
+    
+    <ondrop type="script">
+      if (game.pov.equipped = this) {
+        game.pov.equipped = fists
+        this.inventoryverbs = Split ("Look at;Drop;Equip;Sell", ";")
+        UpdateWeapon
+      }
+    </ondrop>
+    
+  </type>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <!-- =================================================== -->
+  <!-- Elements -->
+
+
+
+
+
+
+
+  <type name="fire_type">
+  </type>
+
+  <type name="frost_type">
+  </type>
+
+  <type name="storm_type">
+  </type>
+
+  <type name="earthmight_type">
+  </type>
+
+  <type name="shadow_type">
+  </type>
+
+  <type name="rainbow_type">
+  </type>
+
+  <type name="divine_type">
+  </type>
+
+  <type name="necrotic_type">
+  </type>
+
+  <type name="chaos_type">
+  </type>
+
+  <type name="law_type">
+  </type>
+
+  <type name="life_type">
+  </type>
+
+  <type name="corruption_type">
+  </type>
+
+
+
+  <!--
+  This is a data store for elements (I call it a "struct" after the keyword in the C programming language)
+  If you add more elements to the name, you need to add them to both lists as well as creating a new type.
+  Note that your new type must end "_type", but that must not be included on these lists.
+  -->
+  <object name="element_struct">
+    <elements type="stringlist">
+      <value>fire</value>
+      <value>frost</value>
+      <value>storm</value>
+      <value>earthmight</value>
+      <value>shadow</value>
+      <value>rainbow</value>
+      <value>divine</value>
+      <value>necrotic</value>
+      <value>law</value>
+      <value>chaos</value>
+      <value>life</value>
+      <value>corruption</value>
+    </elements>
+    <opposedelements type="stringdictionary">
+	    <item>
+	      <key>fire</key>
+	      <value>frost</value>
+	    </item>
+	    <item>
+	      <key>frost</key>
+	      <value>fire</value>
+	    </item>
+	    <item>
+	      <key>storm</key>
+	      <value>earthmight</value>
+	    </item>
+	    <item>
+	      <key>earthmight</key>
+	      <value>storm</value>
+	    </item>
+	    <item>
+	      <key>shadow</key>
+	      <value>rainbow</value>
+	    </item>
+	    <item>
+	      <key>rainbow</key>
+	      <value>shadow</value>
+	    </item>
+	    <item>
+	      <key>divine</key>
+	      <value>necrotic</value>
+	    </item>
+	    <item>
+	      <key>necrotic</key>
+	      <value>divine</value>
+	    </item>
+	    <item>
+	      <key>chaos</key>
+	      <value>law</value>
+	    </item>
+	    <item>
+	      <key>law</key>
+	      <value>chaos</value>
+	    </item>
+	    <item>
+	      <key>life</key>
+	      <value>corruption</value>
+	    </item>
+	    <item>
+	      <key>corruption</key>
+	      <value>life</value>
+	    </item>
+	  </opposedelements>
+    <attackers type="objectlist" />
+  </object>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <!-- =================================================== -->
+  <!-- Monsters -->
+
+
+  <type name="monster">
+    <inherit name="weapon"/>
+    <defence type="int">0</defence>
+    <armour type="int">0</armour>
+    <level type="int">0</level>
+    <hitpoints type="int">10</hitpoints>
+    <take type="boolean">false</take>
+    <noncorporeal type="boolean">false</noncorporeal>
+    <dead type="boolean">false</dead>
+    <attackonsight type="boolean">false</attackonsight>
+    <attackasgroup type="boolean">false</attackasgroup>
+    <attackedonsight type="boolean">false</attackedonsight>
+    <guarding type="boolean">false</guarding>
+    <searched type="boolean">false</searched>
+    <movetype type="string">Constrained</movetype>
+    <displayverbs type="stringlist">
+      <value>Look at</value>
+      <value>Attack</value>
+    </displayverbs>
+    <!-- Call this when a monster dies for some housekeeping -->
+    
+    <makedead type="script"><![CDATA[
+      if (not this.dead) {
+        this.alias = GetDisplayAlias (this) + " (dead)"
+        if (HasString (this, "lookwhendead")) {
+          this.look = this.lookwhendead
+        }
+        else {
+          this.look = this.look + " Oh, and it is dead."
+        }
+        this.dead = True
+        list remove (element_struct.attackers, this)
+        this.displayverbs = Split ("Look at;Search", ";")
+        if (not HasAttribute(this, "alt")) {
+          this.alt = NewStringList()
+        }
+        list add(this.alt, "body")
+        list add(this.alt, "corpse")
+        if (this.guarding) {
+          this.guarding = false
+          unguarded = true
+          foreach (obj, GetDirectChildren(game.pov.parent)) {
+            if (GetBoolean(obj, "guarding")) {
+              unguarded = false
+            }
+          }
+          if (unguarded) {
+            foreach (ex, ScopeExits()) {
+              if (Instr(ex.name, "guard") > 0) {
+                ex.locked = false
+              }
+            }
+          }
+        }
+      }
+    ]]></makedead>
+    
+    <!--
+    Should be called by other scripts, once values are set.
+    Before calling ensure these attributes are set on the foe:
+    temp_db
+    temp_ob_now
+    temp_ob_next
+    temp_damage
+    temp_desc
+    -->
+    <doattack type="script"><![CDATA[
+      if (this.dead) {
+        s = GetDisplayAlias(this)
+        msg("The " + Mid(s, 1, LengthOf(s) - 7) + " is already dead.")
+      }
+      else {
+        SneakUpdate (5)
+        do (this, "settoattack")
+        attackroll = GetRandomInt (1, 20) - this.defence + GetAttack()
+        attackroll = attackroll + game.pov.equipped.attackbonus + this.temp_ob_now
+        game.pov.next_round_ob_bonus = this.temp_ob_next
+        game.pov.db_bonus = this.temp_db
+        
+        if (this.noncorporeal and GetElement(game.pov.equipped) = null) {
+          if (game.pov.equipped.nonweapon) {
+            msg("You attack the " + GetDisplayAlias(this) + ", and pass straight through it!")
+          }
+          else {
+            msg("You swing your " + GetDisplayAlias(game.pov.equipped) + " and it goes straight through the " + GetDisplayAlias(this) + "!")
+          }
+        }
+        else if (attackroll > 10) {
+          damage = GetDamage (game.pov.equipped, game.pov.strength / 2 + this.temp_damage + game.pov.damagebonus, this)
+          this.hitpoints = this.hitpoints - damage
+          if (this.hitpoints > 0) {
+            if (game.pov.equipped.nonweapon) {
+              msg ("You attack and hit, doing " + damage + " points of damage (" + this.hitpoints + " hits left). " + this.hurtbyweapon)
+            }
+            else {
+              msg (this.temp_desc + " " + GetDisplayAlias(game.pov.equipped) + " and hit, doing " + damage + " points of damage (" + this.hitpoints + " hits left). " + this.hurtbyweapon)
+            }
+          }
+          else {
+            if (game.pov.equipped.nonweapon) {
+              msg ("You attack and hit, doing " + damage + " points of damage. " + this.death)
+            }
+            else {
+              msg (this.temp_desc + " " + GetDisplayAlias(game.pov.equipped) + " and hit, doing " + damage + " points of damage. " + this.death)
+            }
+            do (this, "makedead")
+          }
+        }
+        else {
+          if (game.pov.equipped.nonweapon) {
+            msg ("You attack and miss.")
+          }
+          else {
+            msg ("You swing your " + GetDisplayAlias(game.pov.equipped) + " and miss.")
+          }
+        }
+      }
+    ]]></doattack>
+    
+    <attack type="script"><![CDATA[
+      this.temp_db = 0
+      this.temp_ob_now = 0
+      this.temp_ob_next = 0
+      this.temp_damage = 0
+      this.temp_desc = "You swing your"
+      do(this, "doattack")
+    ]]></attack>
+    
+    <feint type="script"><![CDATA[
+      this.temp_db = 0
+      this.temp_ob_now = -3
+      this.temp_ob_next = 4
+      this.temp_damage = 0
+      this.temp_desc = "Looking for an opening, you swing your"
+      do(this, "doattack")
+    ]]></feint>
+    
+    <parry type="script"><![CDATA[
+      this.temp_db = 4
+      this.temp_ob_now = -3
+      this.temp_ob_next = 0
+      this.temp_damage = 0
+      this.temp_desc = "Careful not to drop your defence, you swing your"
+      do(this, "doattack")
+    ]]></parry>
+    
+    <charge type="script"><![CDATA[
+      this.temp_db = -4
+      this.temp_ob_now = 2
+      this.temp_ob_next = 0
+      this.temp_damage = 3
+      this.temp_desc = "You recklessly charge with your"
+      do(this, "doattack")
+    ]]></charge>
+
+    
+    <attackplayer type="script"><![CDATA[
+      attackroll = GetRandomInt (1, 20) - GetDefence () + this.attackbonus
+      game.pov.sneaklevel = 0
+      if (attackroll > 10) {
+        damage = GetDamage (this, 0, game.pov)
+        game.pov.hitpoints = game.pov.hitpoints - damage
+        UpdateHitPoints
+        msg (GetDisplayAlias (this) + " swings at you and hits, doing " + damage + " points of damage.")
+        if (this.hitpoints <= 0) {
+          msg ("You are dead!")
+          finish
+        }
+      }
+      else {
+        msg (GetDisplayAlias (this) + " swings at you and misses.")
+      }
+    ]]></attackplayer>
+    
+    <searchforplayer type="script"><![CDATA[
+      // Should only be called if this monster is in attack mode, but player is absent
+      if (this.movetype = "Forgetful") {
+        list add(element_struct.forgetme, this)
+      }
+      else if (not this.movetype = "Constrained") {
+        ex = GetExitByLink (this.parent, game.pov.parent)
+        if (not ex = null) {
+          this.parent = game.pov.parent
+          msg (GetDisplayAlias (this) + " has followed you here.")
+        }
+      }
+    ]]></searchforplayer>
+    
+    <settoattack type="script"><![CDATA[
+      if (not ListContains (element_struct.attackers, this) and not GetBoolean (this, "dead")) {
+        list add (element_struct.attackers, this)
+        this.parent.attackdetected = true
+      }
+    ]]></settoattack>
+    
+    <search type="script">
+      if (not this.dead) {
+        msg ("You can only search a monster once it is dead.")
+      }
+      else if (this.searched) {
+        msg ("You search it, but find nothing more.")
+      }
+      else {
+        this.searched = true
+        SearchBody (this)
+      }
+    </search>
+
+  </type>
+
+
+
+
+
+
+
+
+
+  <type name="monsterarcher">
+    <inherit name="monster"/>
+    
+    <attackplayer type="script"><![CDATA[
+      attackroll = GetRandomInt (1, 20) - game.pov.defence + this.attackbonus
+      if (attackroll > 10) {
+        damage = GetDamage (this, 0, game.pov)
+        game.pov.hitpoints = game.pov.hitpoints - damage
+        msg (GetDisplayAlias (this) + " shoots an arrow at you and hits, doing " + damage + " points of damage.")
+        if (this.hitpoints <= 0) {
+          msg ("You are dead!")
+          finish
+        }
+      }
+      else {
+        msg (GetDisplayAlias (this) + " shoots an arrow at you and misses.")
+      }
+    ]]></attackplayer>
+    
+  </type>
+
+</library>

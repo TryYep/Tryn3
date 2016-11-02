@@ -1,0 +1,184 @@
+<?xml version="1.0"?>
+<library>
+
+  <!--
+  ShopLib is a basic shopping library for Quest.
+  
+  Requires: ScopeLib
+  
+  How to use:
+
+  Set an integer on the player object called gold; this will be the money she starts with.
+  
+  Set up one location as your shop. You can set this to be of the "shop_location"  type, but it is not necessary. To allow the shop
+  to buy goods from the player, you must set a Boolean attribute called "buys" to true.
+  
+  For each shop, set up a room or object  to hold stock. There should be no exits going to or from these rooms. You may want to put
+  the stock room inside the shop, in which case set visible to false (easier to do if the stockroom is anobject).
+  
+  The description of the shop can include a call to ShopInventory; a list of goods with prices will be displayed.
+  msg (ShopInventory ())
+  
+  
+  The player can type BUY [obj] to make a purchase, or just BUY to select from a menu. Sellable items should have a sell option
+  in the inventory pane, or the player can type SELL [obj].
+  
+  
+  NOTE:  You can have as many shops as you want, but each should have its own stock room.
+  
+  NOTE: It was developed with an RPG type game in mind, and to some degree the design
+  reflects that.
+  
+  NOTE: Goods are sold at one half the buying price.
+    
+  NOTE: The UpdateInventoryCounts function is called after each transaction; it currently does nothing, but it can be overwritten in your
+  game to update a status attribute or whatever to show hom much cash the player currently has.
+  
+  NOTE: Any item that can be bougght or sold must be of the type "merchandise" and must have an integer attribute "price".
+  
+  Version 1.1
+  Quest version: 5.4
+  Written by: The Pixie
+  -->
+
+
+
+  <dynamictemplate name="TakeSuccessful">"You pick " + object.article + " up."</dynamictemplate>
+ //DynamicTemplate("MaxObjectsInInventory", object)
+
+
+
+  <dynamictemplate name="NotForSale">"Sorry the " + GetDisplayAlias(object) + " is not for sale."</dynamictemplate>
+  <dynamictemplate name="CannotAfford">"You look longingly at the " + GetDisplayAlias(object) + ", but you cannot afford it."</dynamictemplate>
+  <dynamictemplate name="BuySuccessful">"You buy the " + GetDisplayAlias(object) + " for " + GetPrice (object.price) + "."</dynamictemplate>
+  <dynamictemplate name="NotAShop">"Where do you think you are, a shop or something?"</dynamictemplate>
+  <dynamictemplate name="BuyOnly">"You cannot sell things here - only buy."</dynamictemplate>
+  <dynamictemplate name="NoPrice">"No one wants to buy the " + GetDisplayAlias (object) + "."</dynamictemplate>
+  <dynamictemplate name="DoNotHaveToSell">"You do not have the " + GetDisplayAlias (object) + "."</dynamictemplate>
+
+
+
+
+  <type name="shop_location">
+    <buys type="boolean">true</buys>
+  </type>
+
+  <type name="merchandise">
+    <inventoryverbs type="stringlist">
+      <value>Look at</value>
+      <value>Drop</value>
+      <value>Sell</value>
+    </inventoryverbs>
+	  <buy type="script"><![CDATA[
+	    if (not HasInt (this, "price")) {
+	      msg (DynamicTemplate("NotForSale", this))
+	    }
+	    else if (this.price > game.pov.gold) {
+	      msg (DynamicTemplate("CannotAfford", this))
+	    }
+	    else {
+	      this.parent = game.pov
+	      game.pov.gold = game.pov.gold - this.price
+	      UpdateInventoryCounts
+	      msg (DynamicTemplate("BuySuccessful", this))
+	    }
+	    //return (0)
+	  ]]></buy>
+  </type>
+
+
+  <command name="buystuff">
+    <pattern>buy #text#;purchase #text#</pattern>
+    <script><![CDATA[
+      if (not HasObject(game.pov.parent, "shopstock")) {
+        msg (DynamicTemplate("NotAShop", game.pov))
+      }
+      else {
+        ProcessScopeCommand ("buy", GetStock (), text, "You cannot see that for sale here", "That's not something you can buy")
+      }
+    ]]></script>
+  </command>
+  
+  <command name="buyfrommenu">
+    <pattern type="string">^buy$|^purchase$</pattern>
+    <script>
+      if (not HasObject(game.pov.parent, "shopstock")) {
+        msg (DynamicTemplate("NotAShop", game.pov))
+      }
+      else {
+        sl = NewStringDictionary ()
+        foreach (obj, GetStock ()) {
+          dictionary add (sl, obj.name, GetDisplayAlias (obj) + " (" + GetPrice (obj.price) + ")")
+        }
+        ShowMenu ("Item to purchase", sl, true) {
+          if (not result = null) {
+            obj = GetObject (result)
+            do (obj, "buy")
+          }
+        } 
+      }
+    </script>
+  </command>
+
+ 
+  <command name="sellstuff">
+    <pattern>sell #object#</pattern>
+    <script>
+      if (not object.parent = game.pov) {
+        msg (DynamicTemplate("DoNotHaveToSell", object))
+      }
+      else if (not HasObject(game.pov.parent, "shopstock")) {
+        msg (DynamicTemplate("NotAShop", game.pov))
+      }
+      else if (not GetBoolean(game.pov.parent, "buys")) {
+        msg (DynamicTemplate("BuyOnly", game.pov))
+      }
+      else if (not HasInt(object, "price")) {
+        msg (DynamicTemplate("NoPrice", object))
+      }
+      else {
+        game.pov.gold = game.pov.gold + object.price / 2
+        msg ("You sell the " + GetDisplayAlias(object) + " for " + GetPrice (object.price / 2) + ".")
+        if (GetBoolean (object, "cloneme")) {
+          destroy (object.name)
+        }
+        else {
+          object.parent = game.pov.parent.shopstock
+        }
+        UpdateInventoryCounts
+      }
+    </script>
+    <unresolved>You want to sell what?</unresolved>
+  </command>
+  
+  
+  <function name="ShopInventory" type="string">
+    sl = NewStringList ()
+    foreach (obj, GetStock ()) {
+      list add (sl, GetDisplayAlias (obj) + " (" + GetPrice (obj.price) + ")")
+    }
+    return ("For sale here: " + Join (sl, ", ") + ".")
+  </function>
+
+
+  <function name="GetStock" type="objectlist">
+    ol = NewObjectList ()
+    if (HasObject (game.pov.parent, "shopstock")) {
+      foreach (obj, GetDirectChildren (game.pov.parent.shopstock)) {
+        if (DoesInherit (obj, "merchandise") and HasInt (obj, "price")) {
+          list add (ol, obj)
+        }
+      }
+    }
+    return (ol)
+  </function>
+  
+  <function name="GetPrice" parameters="price" type="string">
+    return ("" + price + " gp")
+  </function>
+
+
+  <function name="UpdateInventoryCounts"><![CDATA[
+  ]]></function>
+
+</library>
