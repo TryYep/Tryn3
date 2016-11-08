@@ -204,22 +204,33 @@
     <inherit name="editor_room" />
     <inherit name="shop_location" />
     <alias>Nightingale Inn</alias>
-    <description>A small, beautiufl inn. A few people sit in the firelight and rest. Theres a room for rent for 5 gold a night.</description>
+    <description><![CDATA[A small, beautiufl inn. A few people sit in the firelight and rest. Theres a room for rent for 5 gold a night. <br/><br/>{command:Rent a room (-5 Gold){object:Ericson}}]]></description>
     <buys type="boolean">false</buys>
+    <attr name="grid_label">Inn</attr>
     <shopstock type="object">f_InnStockroom</shopstock>
     <enter type="script">
     </enter>
-    <attr name="grid_label">Inn</attr>
     <exit alias="east" to="f_City 1">
       <inherit name="eastdirection" />
     </exit>
     <object name="Abriana The Executioner">
       <inherit name="editor_object" />
       <inherit name="namedmale" />
+      <drop type="boolean">false</drop>
+      <displayverbs type="stringlist">
+        <value>Look at</value>
+      </displayverbs>
       <look type="script">
         msg ("Abriana smacks you")
         DecreaseHealth (5)
       </look>
+      <askdefault type="script">
+        msg ("I dunno")
+      </askdefault>
+      <speak type="script">
+        Ask ("Do you want to buy something or rent a room?") {
+        }
+      </speak>
       <ask type="scriptdictionary">
         <item key="Room">
           ShowMenu ("Sale", , false) {
@@ -232,17 +243,6 @@
           SetBackgroundColour ("SlateBlue")
         </item>
       </tell>
-      <askdefault type="script">
-        msg ("I dunno")
-      </askdefault>
-      <drop type="boolean">false</drop>
-      <displayverbs type="stringlist">
-        <value>Look at</value>
-      </displayverbs>
-      <speak type="script">
-        Ask ("Do you want to buy something or rent a room?") {
-        }
-      </speak>
     </object>
   </object>
   <object name="f_InnStockroom">
@@ -257,6 +257,7 @@
       <use />
       <eathealth type="int">10</eathealth>
       <price type="int">10</price>
+      <givesingle />
     </object>
   </object>
 </asl>
