@@ -1,4 +1,4 @@
-<!--Saved by Quest 5.6.6108.15891-->
+<!--Saved by Quest 5.6.5783.24153-->
 <asl version="550">
   <include ref="English.aslx" />
   <include ref="Core.aslx" />
@@ -14,7 +14,6 @@
     <feature_lightdark />
     <feature_asktell />
     <author>Trynidy Williams</author>
-    <autodescription type="boolean">false</autodescription>
     <start type="script">
       CombatInitialise (true)
     </start>
@@ -28,8 +27,6 @@
     <object name="player">
       <inherit name="editor_object" />
       <inherit name="editor_player" />
-      <maxobjects type="int">15</maxobjects>
-      <containermaxobjects>You're too fat</containermaxobjects>
     </object>
     <exit alias="north" to="Future">
       <inherit name="northdirection" />
@@ -95,9 +92,6 @@
     <exit alias="west" to="f_Nothing">
       <inherit name="westdirection" />
     </exit>
-    <exit alias="north" to="f_Near city">
-      <inherit name="northdirection" />
-    </exit>
   </object>
   <object name="f_Shack">
     <inherit name="editor_room" />
@@ -124,9 +118,6 @@
     <exit alias="south" to="f_Wasteland">
       <inherit name="southdirection" />
     </exit>
-    <exit alias="north" to="f_City 1">
-      <inherit name="northdirection" />
-    </exit>
   </object>
   <object name="f_Nothing">
     <inherit name="editor_room" />
@@ -142,11 +133,6 @@
     </turnscript>
     <object name="Pistol">
       <inherit name="editor_object" />
-      <inherit name="weapon" />
-      <damagedicenumber type="int">1</damagedicenumber>
-      <nonweapon />
-      <look>A starter pistol so you don't die.</look>
-      <feature_usegive />
     </object>
     <exit alias="east" to="f_Wasteland">
       <inherit name="eastdirection" />
@@ -156,44 +142,13 @@
     <inherit name="editor_room" />
     <alias>Forest</alias>
     <description><![CDATA[A large, beautfiul forest. You're now in the past.<br/><br/>Pick up the items here and go forth. Do as you please.]]></description>
-    <firstenter type="script">
-      MoveObjectHere (Werewolf)
-    </firstenter>
     <object name="Wooden Bow">
       <inherit name="editor_object" />
-      <inherit name="weapon" />
       <look>Standard wooden bow. Aka Starter bow</look>
       <listalias>Wooden Bow</listalias>
       <take />
       <feature_usegive />
       <use />
-      <attackbonus type="int">3</attackbonus>
-      <damagebonus type="int">3</damagebonus>
-      <damagedicenumber type="int">5</damagedicenumber>
-      <twohanded />
-      <nonweapon />
     </object>
-    <object name="Werewolf">
-      <inherit name="editor_object" />
-      <inherit name="female" />
-      <inherit name="monster" />
-      <level type="int">1</level>
-      <attackonsight />
-      <guarding />
-      <defence type="int">1</defence>
-      <armour type="int">1</armour>
-      <attackbonus type="int">1</attackbonus>
-      <damagebonus type="int">1</damagebonus>
-      <drop />
-    </object>
-  </object>
-  <object name="f_City 1">
-    <inherit name="editor_room" />
-    <alias>City</alias>
-    <description><![CDATA[The lane you walk is dark. A large plume of smoke sits over the skyline. As you decend into the darkness, more and more small shacks loom in the darkness. The people you see look like shadows. They're small and thin, sickly from starvation. They hide in the shadows, filthy. You cannot feel remorse for them however. They have chosen to destory the world providing them with nurishment.<br/><br/>This is their doing.]]></description>
-    <attr name="grid_length" type="int">3</attr>
-    <exit alias="south" to="f_Near city">
-      <inherit name="southdirection" />
-    </exit>
   </object>
 </asl>

@@ -1,0 +1,398 @@
+The Pixie Combat Library
+
+This library offers a relatively simple, but comprehensive combat system, the basic mechanics being somewhat like D&D (d20, no hit locations). The system can be modified in various ways, some easier than others. Free feel to modify it as you like (but credit me!).
+
+A character is defined by four statistcs; strength, stamina, intelligence, agility. Strength determines what armour can be worn, increases weapon damage and chances to hit. Agility also affects the chances to hit, as well as the character's defence. Stamina determines hit points, intelligence the level of spell that can be learnt and cast.
+
+You can play the demo here:
+http://textadventures.co.uk/create/edit/7fdenn_yieuekubbcc2kza
+
+
+
+A - Setting Up
+
+1. Add the library
+
+Download the ZIP files, extract all the files to your game folder. Put all the files in your game folder (you do not actually need CombatDemo.aslx or notes.txt, but you do need the other nine.
+
+Open you game up in Quest, and in the left hand pane, expand "Advanced", at the very bottom. Click on "Included libraries", then, in the right pane, click on "Add". By Filename, click on None, to open the drop down list. CombatLib.aslx should be there (probably at the top). Select it, then save your game and reload (you should see a "Reload" button towards the top right.
+
+
+
+2. Edit the start script
+
+Click on the "game" object in the left pane, then go to the "Script" tab. Towards the top, it says "Start script", followed by a series of icons. Click on the seventh, "Code view". A text box will appear. Paste this in:
+
+CombatInitialise(true)
+
+This will set up all sorts of stuff when the game starts, and initiate the character creation process. Alternatively, use this to skip character creation (very useful when testing):
+
+CombatInitialise(false)
+
+
+3. Create
+
+Now you need to create your world. As you populate it, go to the "Combat" tab, and set objects to be the appropriate thing. The next section of this guide describes those options.
+
+
+
+B - Options on the Combat Tab
+
+1. Weapon
+
+A weapon is defined by a set of statistics.  The first is the attack bonus, added to the player's total when making an attack to see if he hit or not. Should be 0 for many weapons, but particularly fine examples might have a bonus up to 3. On a successful hit, the game "rolls dice" to determine damage, and the next two statistics determine how many dice and how many sides they have (unlike real dice, you are not restricted to 4, 6, 8, 10, 12 and 20). The damage bonus is simply added to the total
+
+Some suggestions:
+
+Fists 1d4
+Dagger 1d6
+Long sword 2d8
+Mace 1d12+1
+Rapier 4d4
+Short sword 2d6
+Broad sword 3d6
+Great sword 3d6
+Flail 1d12+2
+
+A weapon can be given an element (eg a sword of fire); it will be better against opposed monsters (eg ice trolls) but worse against like monsters (eg imps). Remember to tick the box if two-handed.
+
+You can have bows and firearms too, but there is no way to track ammo, no way to handle cover, monsters will be able to meleee attack the player character, and no way to shoot from one room to another so I would advise against it unless you want to do a lot of coding.
+
+There is no capability for dual wielding either.
+
+
+
+2. Armour
+
+Armour is handled as a complete set. A player can wear only one set of armour at a time, and armour is assumed to vary in level from 0 (no armour) to 5. A player has zero defence and -5 to his attack if armour is too heavy for him (its level is greater than half his strength). As a rough guide, I suggest:
+
+0 - No armour
+1 - Leather armour or hide (such as a typical mammal)
+2 - Reinforced leather or tough hide/scales (such as a crocodile)
+3 - Chain or bony plates (such as certain dinosaurs)
+4 - Full plate
+5 - Exception magical armour
+
+
+
+3. Shield
+
+A shield gives a bonus to the character's defence, from 1 to 3. Cannot be used with a two-handed sword.
+
+
+
+4. Non-attack spell
+
+Instant effect, such as unlocking doors. You need to put in a script to make it do something. Given there are no power points, a healing spell is a bad idea.
+
+Spells should be given a suitable level; the player needs anintelligence equal or greater to cast or learn the spell.
+
+
+
+5. Lasting spell
+
+This causes an on-going spell effect. These last until another spell is cast (but you can set each spell to only last a set number of turns if you desire). Put in a "Status when active"; you can then test player.status to see it is active. For example, when the player looks at an ancient parchment check if (player.status = "Tongues"), to see if the Tongues spell is active, and the parchment can be read. 
+
+Additionally you can have it run a script when cast and when cancelled (you need to ensure whatever bonus is given is taken away when the spell ends).
+
+Tick the "Cannot hold anything" box for an effect that stops the player holding anything (eg transformed into a mouse). You can also link to a special attack (e.g., a weapon called "Mouse Bite"). You are advised not to have a special attack unless "Cannot hold anything" is ticked as the system will get confused the player tries to equip another weapon.
+
+
+
+6. Banishing spell
+
+All creatures (or indeed anything) of the target type are banished. This is a powerful effect, use with caution (i.e., maker high level). Note that if the creature is carrying anything, it will be lost.
+
+
+
+7. Attack spell
+
+Instant effect, attacking anything of the "monster" type (that is not dead) with elemental damage (damage is 1.5x the spell level).
+
+
+
+
+8. Spellbook
+
+You can use spellbooks to hold spells.
+
+
+
+
+9. Potion
+
+Potions work just like lasting spells. Drinking a potion will cancel any on-going spell or potion effect. They are set up just the same, except they default to expiring after 7 rounds. Set that to zero to have them last indefinitely.
+
+
+
+10. Healing potion
+
+These put the player back on full hits. You can only change the cost on the tab.
+
+
+
+11. Magic Item
+
+Only one of each type can be worn at a time (the type is specified in the "How is it worn... " box). This means the player con only wear one amulet, one ring, etc.
+
+Add a script to give a bonus when worn, and to remove it when doffed.
+
+There are four attributes that are there for magic items to modify. They are all zero normally, but could be raised to 2 to 4 by an amulet or whatever, to give a boost. You are free to modify other attributes too, but be careful (eg, what happens when the player goes up a level).
+
+player.defencebonus
+player.attackbonus
+player.magicbonus
+player.damagebonus
+
+It may be preferable to limit the player to one magic item only.
+
+
+
+12. Monster
+
+The first half dozen boxes are descriptions for when the monster is hurt, to give atmosphere when the creature is hit (if you do not assign an element, skip the two "opposed element" fields). In fact the only vital ones are "Description on death" and "Look (when dead)".
+
+Then you have the statistics. Many of these are the same as for weapons (including the option to set an element), but you also have armour, defence, hit points and level. 
+
+Finally you have some options. You can set a monster to attack as soon as the player enters the room (like the goblin in the demo), or to attack as soon as the player attacks any monster in the room (the frostguard and ice wyrm are set like this) or (the default) to attack when it is itself attacked.
+
+A non-corporeal monster (the ghost in the demo) can only be damaged by a magical weapon (one with an element assigned to it).
+
+A monster that is free to move will chase after the player (the goblin again). Monsters can be set to guard an exit (the mudman in the demo; more details in section D-1).
+
+
+
+13. Monster with bow
+
+This is just a monster with a different attack description.
+
+
+
+14. Merchandise
+
+Anything else the player can buy and sell should be merchandise (such as treasure). It needs a price set. Weapons, armour, shields, potions and magic items are also merchandise, and can be bouight and sold, if they have a price set. Note that when the player sells things, he only gets half the buying price for them.
+
+
+
+C - Options on the Shop tab
+
+For a room, you will see a Shop tab.
+
+To create a shop you obviously need a room that is set as a Shop on the Shop tab. You also need to set up an object to hold stock. This can be inside the shop, just set it to not visible on the Setup tab. Back to the shop itself, on the Shop tab, select the stock room you have created from the "Stock room" drop-down list. 
+
+There is also a check box to determine if a shop will buy anything from the player.
+
+
+
+D - Some explanation...
+
+1. Guarding an exit
+
+A monster can be set to be "guarding" one or more exits. Each guarded exit must be locked, and the name of the exit must include the string "guard" (so you can have locked exits too; just do not have "guard" in the name of the exit). When the monster dies, the exits will be automatically unlocked. It is good idea to change the "Print message when locked" string to something like "That way is block by a monster". You can have several monsters guarding one room (like the frostguard and ice wyrm in the demo). Do not have the monster free to follow the player.
+
+Note that if you have an Unlock spell, code it to not unlock exits with "guard" in the name (as is the case in the Demo).
+
+
+
+2. How Weapon Attacks Work
+
+A weapon attack by the player is resolved by rolling d20, subtracting the foe's defence and adding the average of the character's strength and agility, plus the weapon attack bonus. A result of over 10 indicates a successful hit.
+
+The GetAttack function determines how the player character's attack is calculated (monsters just have an attack statistic).
+
+Damage is calculated from the weapon damage bonus and half the character's strength, plus the damage rolls for the weapon, minus the armour value of the foe multiplied by the number of dice. This means that a weapon doing 4d4 is great against unarmoured foes (in the demo, the rapier against the fire drake), but rubbish against armored (such as the lava golem); a d12 weapon (like the mace in the demo) will be better against armour, not so good against unarmoured.
+
+The GetDamage function determines how damage is calculated (monsters and character alike).
+
+Monster attacks are resolved exactly the same (but monsters have weapon damage and armour statistics, rather than having weapons and armour with those numbers). The character's defence is equal to half his agility minus his armour (minimum of zero) (good armour makes you more likely to be hit).
+
+The GetDefence function determines how the player character's defence is calculated (monsters just have a defence statistic).
+
+A successful attack will always do at least 1 point of damage.
+
+
+
+3. About Spells
+
+There are a couple of design issues with spells. The first is limiting their use. Many RPG magic systems use power points (by whatever name); when they run out you can cast no more spells. A problem with this is deciding how power points regenerate. Can the character fight a monster, then sleep eight hours to get all his power points back (the 15 minute adventuring day)? Another approach is to have each spell effectively single use. Both these approaches could leave the player with no spells when she actually needs them at the climax of the game (which arguably is the point). The system I have adopted is to allow spells to be cast as often as you like, but casting a new spell cancels any on-going spell effects, which, apart from anything else, is easier to implement that the other systems mentioned.
+
+The second issue is that by its nature magic can potentially do anything. This means it is up to you the writer to create spells that will amaze your players, and all this library can do is give you a framework. However, to help you as much as possible, there are several spell types available.
+
+Spells the character can cast are listed in their own inventory pane during play. Learning a spell moves it from the game world to the player's spell inventory. Note that spells are not targeted in this system; the player picks a spell and casts it (this fits with the Quest system of display verbs). It should be coded to affect everything applicable in the room. Spells that are higher level than the character's intelligence cannot be learnt or cast.
+
+
+
+4. About the Elements
+
+Attack spells must be of an element, and twelve are already set up. Monsters can be assigned to elements too; they will be immune to that element, but take four-fold damage from the opposed element. If you do not like a pair of elements, just do not use them. If you want to rename, just do so; the name I have given here will never be seen by the player,
+
+fire - frost
+storm - earthmight
+shadow - rainbow
+divine - necrotic
+chaos - law
+life - corruption
+
+Weapons can also be given an element. They then do double damage against opposed elements, and half damage against like elements. For example: 
+
+                    Orc         Imp        Frostguard
+Fireball            100%          0           400%
+Normal sword        100%       100%           100%
+Sword of fire       100%        50%           200%
+
+
+
+E - Other Features
+
+1. Sneaking
+
+A player can type SNEAK to hide. Her hidden status (player.sneaklevel) will be her agility minus her armour. Attacks while hidden do extra damage. The player's sneaklevel drops over time. If the player tries SNEAK whilst in combat, monsters will continue to attack, and sneaklevel will drop straight to zero.
+
+A monster will attack if its level is equal to or greater than sneaklevel. 
+
+
+
+2. Searching Corpses
+
+When a monster dies, its body can be searched by the character. There is a chance of gold related to its level (automatically added to the player's inventory when searching). Anything that is a direct child of the monster will also be discovered (and will then be in the room).
+
+
+
+
+3. Character level
+
+The player does not have a level, and the system does not track experience points. The simplest way to handle levelling is to let the character level up after getting to a certain point in the game. Cancel any on-going spell effect, set player.maxpoints to a new (and higher) value, then call the LevelUp function. Here is how:
+
+CancelSpell
+player.maxpoints = 15
+LevelUp
+
+If magic items have modified the basic statastics, you will need to take that into account too. During levelling the panes and command bar are hidden, but show be restired to the original state on completion. Hits are adjusted proportionally if stamina is increased.
+
+
+
+4. The player
+
+The player's name is held in an attribute called "alias", while the "female" attribute is true if the player is female.
+
+By default, the character's total hits points are equal to 20 plus five times his stamina. Hit points are recovered primarily by drinking healing potions.
+
+
+
+F - Customising
+
+1. Modifying Some Defaults
+
+The player can start the game with a weapon and armour, but they will not be equipped or worn. Similarly spells must be learnt in game. There are ways around this, but you need to know what you are doing.
+
+To change the amount of damage done by elemental attack spells, set an integer attribute on the game object called "elementaldamage". Spells will do damage equal to this number, multipled by their level, divided by 100. The default is 150, so a sixth level spell will do 9 points of damage.
+
+You can also set some attributes on the player to modify the game.
+
+gold
+Player starts with this gold (defaults to 0)
+
+maxpoints
+This is the number of points that can be spent on attributes (defaults to 10)
+
+nameprompt
+A string the player sees at the start asking for a name.
+
+pointsprompt
+A string the player sees at the start asking to spend points on attributes.
+
+To change the default character, go into CombatLib, search for "Boris", and work it out for yourself!
+
+
+
+2. Overriding Functions
+
+Quest allows creators to override existing functions. All this means is that you create a function with the same name, and it will replace the existing function.
+
+To change the currency, create a function, GetPrice, which takes an integer as a parameter and returns a string. It might look like this:
+
+  <function name="GetPrice" parameters="price" type="string">
+    return ("" + price + " gp")
+  </function>
+
+Or this:
+
+  <function name="GetPrice" parameters="price" type="string">
+    return ("$" + price)
+  </function>
+
+You can change how the player's total hits are calculated. This is the default:
+
+  <function name="CalcFullHits" type="int"><![CDATA[
+    return (20 + 5 * game.pov.stamina)
+  ]]></function>
+
+You might also look at SearchBody, ArmourTooHeavy, GetAttack, GetDamage and GetDefence in CombatLib.xml.
+
+If you want to do fancy tricks with JavaScript to modify the appearance, you should override InitUserInterface. Keep the existing three lines, and add your own at the end.
+
+  <function name="InitUserInterface">
+    if (GetObject ("spells_known") = null) create ("spells_known")
+    SetInventory2Label ("Spells")
+    SetInventory2 (GetDirectChildren (spells_known))    
+  </function>
+
+
+
+3. Adding New Elements
+
+Adding new elements involves a bit of effort. This system requires that elements are added in pairs or opposites, such as fire and frost. Before attempting this, make sure you know how to use types in Quest.
+  1. Create a new type for both elements, named [element]_type
+  2. In the data section, the object element_struct needs both elements added to both "elements" and
+      "opposedelements", and for the latter you need to put them in both ways around (look at existing entries)
+  3. You need to add both elements to the tab, both for "weapon" and for "attackspell". Again, see existing
+      entries.
+
+
+
+4. Character setup
+
+I said before that having the player start with armour and weapons is tricky, but it is worth covering.
+
+To have a weapon equipped:
+
+        game.pov.equipped = weapon
+        weapon.inventoryverbs = Split ("Look at;Drop;Unequip", ";")
+        UpdateWeapon
+
+For a shield:
+
+        game.pov.shield = shield
+        shield.inventoryverbs = Split ("Look at;Drop;Unequip", ";")
+
+For armour:
+
+        game.pov.armourobject = armour
+        game.pov.armour = armour.level
+        armour.inventoryverbs = Split ("Look at;Remove", ";")
+        armour.listalias = GetDisplayAlias (this) + " (worn)"
+
+For spells:
+
+        spell.parent = spells_known
+        spell.inventoryverbs = Split ("Cast", " ")
+        msg (DynamicTemplate("SpellLearnt", spell))
+        SetInventory2 (GetDirectChildren (spells_known))        
+
+
+
+5. Adding more attributes
+
+You might be tempted to add one or more attributes; charisma perhaps. This is certainly possible, but you should think carefully before doing so. What will a character with high charisma be able to do that others cannot? If the answer is not a lot, then players are not going to spend points on it. Strength, agility and stamina are used every round of combat, intelligence is used for all magic. Other attributes need to be just as useful. They also have to be PERCEIVED as just as useful.
+
+
+
+6. Other genres
+
+I designed this with fantasy in mind, and it assumes melee fighting and magic, however it should be adaptable for use in a science-fiction or pulp game. At the very least you will want to modify some descriptions. Spells become force powers or psionics, and the learning mechanism may need adjusting, or drop spells and have intelligence allow the player to reprogram robots, etc.
+
+
+
+G - Credits
+
+Thanks to Alex Warren for Quest. The second inventory and character attribute setting systems were originally designed by Jay Nabonne.
