@@ -1,4 +1,4 @@
-<!--Saved by Quest 5.6.6108.15891-->
+<!--Saved by Quest 5.6.5783.24153-->
 <asl version="550">
   <include ref="English.aslx" />
   <include ref="Core.aslx" />
@@ -189,11 +189,74 @@
   </object>
   <object name="f_City 1">
     <inherit name="editor_room" />
+    <inherit name="shop_location" />
     <alias>City</alias>
     <description><![CDATA[The lane you walk is dark. A large plume of smoke sits over the skyline. As you decend into the darkness, more and more small shacks loom in the darkness. The people you see look like shadows. They're small and thin, sickly from starvation. They hide in the shadows, filthy. You cannot feel remorse for them however. They have chosen to destory the world providing them with nurishment.<br/><br/>This is their doing.]]></description>
     <attr name="grid_length" type="int">3</attr>
     <exit alias="south" to="f_Near city">
       <inherit name="southdirection" />
     </exit>
+    <exit alias="west" to="f_Inn">
+      <inherit name="westdirection" />
+    </exit>
+  </object>
+  <object name="f_Inn">
+    <inherit name="editor_room" />
+    <inherit name="shop_location" />
+    <alias>Nightingale Inn</alias>
+    <description>A small, beautiufl inn. A few people sit in the firelight and rest. Theres a room for rent for 5 gold a night.</description>
+    <buys type="boolean">false</buys>
+    <shopstock type="object">f_InnStockroom</shopstock>
+    <enter type="script">
+    </enter>
+    <attr name="grid_label">Inn</attr>
+    <exit alias="east" to="f_City 1">
+      <inherit name="eastdirection" />
+    </exit>
+    <object name="Abriana The Executioner">
+      <inherit name="editor_object" />
+      <inherit name="namedmale" />
+      <look type="script">
+        msg ("Abriana smacks you")
+        DecreaseHealth (5)
+      </look>
+      <ask type="scriptdictionary">
+        <item key="Room">
+          ShowMenu ("Sale", , false) {
+            msg ("Good")
+          }
+        </item>
+      </ask>
+      <tell type="scriptdictionary">
+        <item key="Room">
+          SetBackgroundColour ("SlateBlue")
+        </item>
+      </tell>
+      <askdefault type="script">
+        msg ("I dunno")
+      </askdefault>
+      <drop type="boolean">false</drop>
+      <displayverbs type="stringlist">
+        <value>Look at</value>
+      </displayverbs>
+      <speak type="script">
+        Ask ("Do you want to buy something or rent a room?") {
+        }
+      </speak>
+    </object>
+  </object>
+  <object name="f_InnStockroom">
+    <inherit name="editor_room" />
+    <object name="Ericson">
+      <inherit name="editor_object" />
+      <inherit name="edible" />
+      <inherit name="merchandise" />
+      <take />
+      <feature_usegive />
+      <feature_edible />
+      <use />
+      <eathealth type="int">10</eathealth>
+      <price type="int">10</price>
+    </object>
   </object>
 </asl>

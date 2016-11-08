@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<library>
+  <!--
+  LevelLib is a basic character creation and levelling library for Quest. See the Wiki How to guide for details.
+  
+  Version 1.0
+  Quest version: 5.4
+  Written by: The Pixie
+  -->
+
+  <command name="IncCommand">
+    <pattern>Inc #text#</pattern>
+    <script><![CDATA[
+      if (TotalAttributes() < game.pov.maxpoints) {
+        value = GetAttribute(game.pov, text)
+        set (game.pov, text, value+1)
+      }
+      ChooseAttributes
+    ]]></script>
+  </command>
+  
+  <command name="DecCommand">
+    <pattern>Dec #text#</pattern>
+    <script><![CDATA[
+      value = GetAttribute(game.pov, text)
+      oldvalue = GetAttribute(game.pov, text+"_old")
+      if (value > oldvalue) {
+        set (game.pov, text, value-1)
+      }
+      ChooseAttributes
+    ]]></script>
+  </command>
+  
+  <command name="LevellingDoneCommand">
+    <pattern>Levelling Done</pattern>
+    <script>
+      ClearScreen
+      request (Show, "Command")
+      game.showdescriptiononenter = game.remembershowdescriptiononenter
+      ShowRoomDescription
+      game.notarealturn = true
+      // get full hits when player levels
+      if (game.showpanes) request(PanesVisible, "on")
+      if (game.showcommandbar) request(Show, "Command")
+      game.pov.hitpoints = CalcFullHits () * game.proportionoffullhits / 1000
+      UpdateHitPoints
+    </script>
+  </command>
+  
+  <command name="LevellingCommand">
+    <pattern>level</pattern>
+    <script>
+      LevelUp
+    </script>
+  </command>
+  
+  
+  <function name="LevelUp"><![CDATA[
+      game.remembershowdescriptiononenter = game.showdescriptiononenter
+      game.showdescriptiononenter = false
+      game.proportionoffullhits = 1000 * game.pov.hitpoints / CalcFullHits ()
+      request (Hide, "Command")
+      request(PanesVisible, "off")
+      foreach (att, game.pov.attlist) {
+         if (not HasInt (game.pov, att)) set (game.pov, att, 0)
+         set (game.pov, att + "_old", GetInt (game.pov, att))
+       }
+      ChooseAttributes
+  ]]></function>
+  
+  <function name="ChooseAttributes"><![CDATA[
+      ClearScreen
+      msg ("Please assign points to attributes (you have " + (game.pov.maxpoints - TotalAttributes()) + " points still to spend)")
+      msg(" ")
+      foreach (att, game.pov.attlist) {
+        msg (att + ": {command:Dec " + att + ":<} {" + game.pov.name + "." + att + "} {command:Inc " + att + ":>}")
+      }
+      msg(" ")
+      msg ("{command:Levelling Done:Done}")
+      msg(" ")
+      msg ("Your character is defined by four statistics:")
+      msg ("STAMINA: Used to determine the total hit points.")
+      msg ("STRENGTH: Determines the maximum armour that can be worn, also a bonus to attack and damage rolls.")
+      msg ("AGILITY: A bonus to attack rolls and to your defence. Also determines your sneaking ability.")
+      msg ("INTELLIGENCE: Used to determine the maximum spell level you can learn.")
+      game.notarealturn = true
+  ]]></function>
+  
+  <function name="TotalAttributes" type="int">
+      total = 0
+      foreach (att, game.pov.attlist) {
+        total = total + GetInt (game.pov, att)
+      }
+      return (total)
+  </function>
+  
+  <function name="PointsLeft" type="int">
+      return (game.pov.maxpoints - TotalAttributes())
+  </function>
+</library>
