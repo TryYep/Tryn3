@@ -13,17 +13,24 @@
     <showhealth />
     <feature_limitinventory />
     <feature_lightdark />
-    <feature_asktell />
+    <attr name="feature_asktell" type="boolean">false</attr>
     <author>Trynidy Williams</author>
     <autodescription type="boolean">false</autodescription>
+    <setcustomwidth type="boolean">false</setcustomwidth>
+    <attr name="changeroom_newline" type="boolean">false</attr>
+    <echohyperlinks type="boolean">false</echohyperlinks>
+    <pov type="object">player</pov>
     <start type="script">
       CombatInitialise (true)
     </start>
+    <onhealthzero type="script">
+      finish
+    </onhealthzero>
   </game>
   <object name="Opening Room">
     <inherit name="editor_room" />
     <usedefaultprefix type="boolean">false</usedefaultprefix>
-    <description><![CDATA[Welcome! I'm Trynidy, the game designer. This is the start room. GHAI onto whichever world you decide. There are three; steampunk, mythical medieval, and a terrible future for the human race. Go on and decide. You can skip to other worlds from time to time so nothing is perminent. Good luck!<br/><br/><b>Controls</b>:<br/><br/>Click on blue words to select whatever you need to do to that object.<br/>Click your map to move. <br/>Click you inventory to use objects.<br/><br/>Ahead is the <i>future of the human race</i>. The world is dying and so are we. You can save the world or doom it.<br/><br/>To the left is a world <i>filled with creatures that eat humans</i>. They can attack during the day or night. Beware.<br/><br/>To the right is a <i>medival world</i> where the myths we fear are real. Good luck at surviving.]]></description>
+    <description><![CDATA[Welcome! I'm Trynidy, the game designer. This is the start room. Go onto whichever world you decide. There are three; steampunk, mythical medieval, and a terrible future for the human race. Go on and decide. You can skip to other worlds from time to time so nothing is perminent. Good luck!<br/><br/><b>Controls</b>:<br/><br/>Click on blue words to select whatever you need to do to that object.<br/>Click your map to move. <br/>Click you inventory to use objects.<br/><br/>Ahead is the <i>future of the human race</i>. The world is dying and so are we. You can save the world or doom it.<br/><br/>To the left is a world <i>filled with creatures that eat humans</i>. They can attack during the day or night. Beware.<br/><br/>To the right is a <i>medival world</i> where the myths we fear are real. Good luck at surviving.]]></description>
     <descprefix>You are in the </descprefix>
     <objectslistprefix type="string"></objectslistprefix>
     <object name="player">
@@ -32,6 +39,7 @@
       <inherit name="talkingchar" />
       <maxobjects type="int">15</maxobjects>
       <containermaxobjects>You're too fat</containermaxobjects>
+      <usedefaultprefix type="boolean">false</usedefaultprefix>
     </object>
     <exit alias="north" to="Future">
       <inherit name="northdirection" />
@@ -218,7 +226,7 @@
     <inherit name="editor_room" />
     <inherit name="shop_location" />
     <alias>Nightingale Inn</alias>
-    <description>A small, beautiufl inn. A few people sit in the firelight and rest. Theres a room for rent for 5 gold a night. </description>
+    <description>A small, beautiful inn. A few people sit in the firelight and rest. Theres a room for rent for 5 gold a night. </description>
     <buys type="boolean">false</buys>
     <attr name="grid_label">Inn</attr>
     <shopstock type="object">f_InnStockroom</shopstock>
@@ -236,6 +244,9 @@
         <value>Look at</value>
         <value>Speak to</value>
       </displayverbs>
+      <hideafter type="boolean">false</hideafter>
+      <usedefaultprefix />
+      <alias>Abriana</alias>
       <look type="script">
         msg ("Abriana smacks you")
         DecreaseHealth (5)
@@ -243,29 +254,33 @@
       <askdefault type="script">
         msg ("I dunno")
       </askdefault>
-      <hideafter type="boolean">false</hideafter>
       <greet type="script">
         msg ("Welcome! Rooms are 5 goldpieces and I sell goods!")
       </greet>
-      <ask type="scriptdictionary" />
-      <tell type="scriptdictionary" />
       <talk type="script">
         msg ("Wanna talk?")
       </talk>
-      <alias>Abriana</alias>
+      <ask type="scriptdictionary" />
+      <tell type="scriptdictionary" />
       <object name="abriana_room">
         <inherit name="editor_object" />
         <inherit name="topic" />
         <inherit name="startingtopic" />
         <hideafter type="boolean">false</hideafter>
+        <alias>Room</alias>
+        <nowshow type="list" />
         <talk type="script">
           msg ("You'd like a room?")
         </talk>
-        <alias>Room</alias>
-        <nowshow>List:</nowshow>
       </object>
       <object name="abriana_buy">
         <inherit name="editor_object" />
+        <inherit name="startingtopic" />
+        <alias>Buy</alias>
+        <hideafter type="boolean">false</hideafter>
+        <talk type="script">
+          msg ("You wanna switch supplies? I sell and buy wares.")
+        </talk>
       </object>
     </object>
   </object>
@@ -295,6 +310,9 @@
     <exit alias="south" to="f_City 1">
       <inherit name="southdirection" />
     </exit>
+    <exit alias="north" to="Castle">
+      <inherit name="northdirection" />
+    </exit>
   </object>
   <object name="Gate Guard">
     <inherit name="editor_object" />
@@ -305,5 +323,52 @@
     <greet type="script">
       msg ("No one beyond this point.")
     </greet>
+    <object name="guard_gate">
+      <inherit name="editor_object" />
+    </object>
+  </object>
+  <object name="Castle">
+    <inherit name="editor_room" />
+    <description>The room is funished in pelts and horns of long dead animal types. Two women sit on a large thrown, shaped more like a couch. They lay together. Both had bright silver hair. One seemed to be sleeping in the pile of furrs and soft things they had gathered upon their thrown. One, the awake one, had a gold crown. The one alseep seemed to dawn a silver crown to match her hair.</description>
+    <attr name="grid_label">Castle</attr>
+    <object name="Queen">
+      <inherit name="editor_object" />
+      <inherit name="namedfemale" />
+      <look>She sleeps peacefully beside her King. The thrown looks warm and cozy.</look>
+      <usedefaultprefix />
+      <displayverbs type="stringlist">
+        <value>Look at</value>
+      </displayverbs>
+    </object>
+    <object name="King">
+      <inherit name="editor_object" />
+      <inherit name="namedfemale" />
+      <inherit name="talkingchar" />
+      <usedefaultprefix />
+      <look><![CDATA[She is the king. She has a gold crown and green eyes. She looks <i>very</i> mad.]]></look>
+      <greet type="script">
+        msg ("Who are you?")
+      </greet>
+    </object>
+    <exit alias="south" to="f_City2">
+      <inherit name="southdirection" />
+    </exit>
+    <exit alias="north" to="Castle">
+      <inherit name="northdirection" />
+      <lookonly />
+      <look>A large thrown with two women on it. Its made with animal skins from long dead spieces. </look>
+    </exit>
+    <exit alias="up" to="Tower">
+      <inherit name="updirection" />
+    </exit>
+  </object>
+  <object name="Tower">
+    <inherit name="editor_room" />
+    <inherit name="gridborder_path_e" />
+    <description>There's a tower with a mighty wizard within. He's crazy, but amazingly smart.</description>
+    <attr name="grid_label">Tower</attr>
+    <exit alias="down" to="Castle">
+      <inherit name="downdirection" />
+    </exit>
   </object>
 </asl>
