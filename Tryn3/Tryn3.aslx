@@ -17,8 +17,13 @@
     <author>Trynidy Williams</author>
     <autodescription type="boolean">false</autodescription>
     <setcustomwidth type="boolean">false</setcustomwidth>
-    <attr name="changeroom_newline" type="boolean">false</attr>
+    <changeroom_newline />
     <echohyperlinks type="boolean">false</echohyperlinks>
+    <setcustompadding type="boolean">false</setcustompadding>
+    <custompaddingtop type="int">10</custompaddingtop>
+    <custompaddingbottom type="int">10</custompaddingbottom>
+    <custompaddingleft type="int">10</custompaddingleft>
+    <custompaddingright type="int">10</custompaddingright>
     <pov type="object">player</pov>
     <start type="script">
       CombatInitialise (true)
@@ -27,6 +32,29 @@
       finish
     </onhealthzero>
   </game>
+  <command name="status">
+    <pattern>status</pattern>
+    <script>
+      if (HasString(game.pov, "alias")) {
+        msg ("Name: " + game.pov.alias)
+      }
+      foreach (att, game.pov.attlist) {
+        msg (CapFirst(att) + ": " + GetInt(game.pov, att))
+      }
+      msg ("Health:" + game.pov.health)
+      msg ("Defence: " + GetDefence())
+      if (not (game.pov.armourobject = null)) {
+        msg ("Armour: " + GetDisplayAlias (game.pov.armourobject))
+        if (ArmourTooHeavy(game.pov.armour)) {
+          msg ("... The armour is too heavy for you to fight effectively.")
+        }
+      }
+      if (not (game.pov.equipped = null)) {
+        msg ("Weapon: " + GetDisplayAlias (game.pov.equipped) + " " + GetWeaponStats (game.pov.equipped))
+      }
+      msg ("Gold: " + player.gold + 5)
+    </script>
+  </command>
   <object name="Opening Room">
     <inherit name="editor_room" />
     <usedefaultprefix type="boolean">false</usedefaultprefix>
@@ -40,6 +68,7 @@
       <maxobjects type="int">15</maxobjects>
       <containermaxobjects>You're too fat</containermaxobjects>
       <usedefaultprefix type="boolean">false</usedefaultprefix>
+      <gold type="int">20</gold>
     </object>
     <exit alias="north" to="Future">
       <inherit name="northdirection" />
@@ -97,11 +126,10 @@
   <object name="f_Wasteland">
     <inherit name="editor_room" />
     <alias>Wasteland</alias>
-    <description><![CDATA[A boring wasteland. A small shack is at your right. A looming city far in the distance north. More wasteland to the left.<br/><br/>It's strangely cold and windy. No trees are there to block the wind. No animals or animal tracks are seen on the dirty sand.]]></description>
+    <description><![CDATA[A boring wasteland. A small shack is at your right. A looming city far in the distance north. More wasteland to the left.<br/><br/>It's strangely cold and windy. No trees are there to block the wind. No animals or animal tracks are seen on the dirty sand. It looks almost like a more desserted version of the Wastes of Fallout: New Vegas.]]></description>
     <descprefix>You are in the</descprefix>
     <attr name="grid_label">Wasteland</attr>
     <firstenter type="script">
-      msg ("A boring wasteland. A small shack is at your right. A looming city far in the distance north. Wasteland to the left. This is the start of your journey.")
     </firstenter>
     <exit alias="east" to="f_Shack">
       <inherit name="eastdirection" />
@@ -116,9 +144,10 @@
   <object name="f_Shack">
     <inherit name="editor_room" />
     <descprefix>You are in a small </descprefix>
-    <description>A small shack, it's full of sand and has a small bed in the corner. It's shealther from the outside at least. Looks as though no one is there considering the deterrioration of the bed. It still looks better than the sand outside though.</description>
+    <description>A small shack, it's full of sand and has a small bed in the corner. It's shealther from the outside at least. Looks as though no one is there considering the deterrioration of the bed. It still looks better than the sand outside though. Nothing else within this shake.</description>
     <alias>Shack</alias>
     <attr name="grid_label">Shack</attr>
+    <dark type="boolean">false</dark>
     <object name="Bed">
       <inherit name="editor_object" />
       <look>A towel thrown into the corner to make a sort of bed. Looks cozier than outside. Maybe a small nap may help.</look>
@@ -137,12 +166,36 @@
     <inherit name="editor_room" />
     <alias>Near City</alias>
     <attr name="grid_label">Waste</attr>
+    <description><![CDATA[You are getting closer to the city you see in the distance. It's large and dark. Nothing else is for miles. No water, no break in the sun, <i>nothing</i>.  The city looks filthy and covered in a sort of tarp over the tops of buildings that stretch up to the sky. ]]></description>
     <exit alias="south" to="f_Wasteland">
       <inherit name="southdirection" />
     </exit>
     <exit alias="north" to="f_City 1">
       <inherit name="northdirection" />
     </exit>
+    <object name="Mutated Rat">
+      <inherit name="editor_object" />
+      <inherit name="monster" />
+      <inherit name="namedmale" />
+      <hurtbyweapon type="string"></hurtbyweapon>
+      <lookwhendead>It's mutated and rotten. Gross!</lookwhendead>
+      <hitpoints type="int">2</hitpoints>
+      <attackonsight />
+      <usedefaultprefix />
+      <displayverbs type="stringlist">
+        <value>Look at</value>
+        <value>Attack</value>
+      </displayverbs>
+      <attack type="script">
+        this.temp_db = 0
+        this.temp_ob_now = 0
+        this.temp_ob_next = 0
+        this.temp_damage = 0
+        this.temp_desc = "You swing your"
+        do (this, "doattack")
+        DecreaseHealth (5)
+      </attack>
+    </object>
   </object>
   <object name="f_Nothing">
     <inherit name="editor_room" />
@@ -154,16 +207,14 @@
     </beforeenter>
     <onexit type="script">
     </onexit>
-    <turnscript>
-      <enabled type="boolean">false</enabled>
-    </turnscript>
     <object name="Pistol">
       <inherit name="editor_object" />
       <inherit name="weapon" />
-      <damagedicenumber type="int">1</damagedicenumber>
+      <damagedicenumber type="int">5</damagedicenumber>
       <nonweapon />
-      <look>A starter pistol so you don't die.</look>
+      <look>A starter pistol so you don't die. (Hint: You need it dear.)</look>
       <feature_usegive />
+      <attackbonus type="int">3</attackbonus>
     </object>
     <exit alias="east" to="f_Wasteland">
       <inherit name="eastdirection" />
@@ -203,11 +254,39 @@
       <attackbonus type="int">1</attackbonus>
       <damagebonus type="int">1</damagebonus>
       <drop />
+      <hitpoints type="int">1</hitpoints>
+      <attack type="script">
+        this.temp_db = 0
+        this.temp_ob_now = 0
+        this.temp_ob_next = 0
+        this.temp_damage = 0
+        this.temp_desc = "You swing your"
+        do (this, "doattack")
+        DecreaseHealth (5)
+      </attack>
+      <search type="script">
+        if (not this.dead) {
+          msg ("You can only search a monster once it is dead.")
+        }
+        else if (this.searched) {
+          msg ("You search it, but find nothing more.")
+        }
+        else {
+          this.searched = true
+          SearchBody (this)
+        }
+      </search>
+      <ondrop type="script">
+        if (game.pov.equipped = this) {
+          game.pov.equipped = fists
+          this.inventoryverbs = Split ("Look at;Drop;Equip;Sell", ";")
+          UpdateWeapon
+        }
+      </ondrop>
     </object>
   </object>
   <object name="f_City 1">
     <inherit name="editor_room" />
-    <inherit name="shop_location" />
     <alias>City</alias>
     <description><![CDATA[The lane you walk is dark. A large plume of smoke sits over the skyline. As you decend into the darkness, more and more small shacks loom in the darkness. The people you see look like shadows. They're small and thin, sickly from starvation. They hide in the shadows, filthy. You cannot feel remorse for them however. They have chosen to destory the world providing them with nurishment.<br/><br/>This is their doing.]]></description>
     <attr name="grid_length" type="int">3</attr>
@@ -232,6 +311,8 @@
     <shopstock type="object">f_InnStockroom</shopstock>
     <enter type="script">
     </enter>
+    <beforefirstenter type="script">
+    </beforefirstenter>
     <exit alias="east" to="f_City 1">
       <inherit name="eastdirection" />
     </exit>
@@ -270,7 +351,10 @@
         <alias>Room</alias>
         <nowshow type="list" />
         <talk type="script">
-          msg ("You'd like a room?")
+          msg ("You'd like a room? It's 5 gold.")
+          player.gold = player.gold + -5
+          msg ("Go on to the back and sleep. There's food in the back. Come to me if you need me pup.")
+          UnlockExit (InnRoom2)
         </talk>
       </object>
       <object name="abriana_buy">
@@ -279,27 +363,34 @@
         <alias>Buy</alias>
         <hideafter type="boolean">false</hideafter>
         <talk type="script">
-          msg ("You wanna switch supplies? I sell and buy wares.")
+          msg ("You wanna switch supplies? I sell wares.")
+          Ask ("I have a crystalized rose that's black. It's the last of its kind. It's priceless. But maybe you can persuade me.") {
+            msg ("Oh hon you can't buy this.")
+          }
+          Ask ("I have some food. 5 gold per. Food is scarce. Deal with it.") {
+            msg ("Here ya go!")
+            AddToInventory (Ericson)
+            player.gold = player.gold + -5
+          }
+          Ask ("I also have a small black ring. It's just something I found. 2 gold for it.") {
+            msg ("Here ya go!")
+            AddToInventory (Black Ring)
+            player.gold = player.gold + -2
+          }
         </talk>
       </object>
+      <object name="Black Ring">
+        <inherit name="editor_object" />
+        <take />
+        <feature_usegive />
+        <use />
+        <giveto type="string"></giveto>
+      </object>
     </object>
-  </object>
-  <object name="f_InnStockroom">
-    <inherit name="editor_room" />
-    <buys type="boolean">false</buys>
-    <shopstock type="object">f_Inn</shopstock>
-    <object name="Ericson">
-      <inherit name="editor_object" />
-      <inherit name="edible" />
-      <inherit name="merchandise" />
-      <take />
-      <feature_usegive />
-      <feature_edible />
-      <use />
-      <eathealth type="int">10</eathealth>
-      <price type="int">10</price>
-      <givesingle />
-    </object>
+    <exit name="InnRoom2" alias="west" to="f_Bedroom">
+      <inherit name="westdirection" />
+      <locked />
+    </exit>
   </object>
   <object name="f_City2">
     <inherit name="editor_room" />
@@ -310,25 +401,50 @@
     <exit alias="south" to="f_City 1">
       <inherit name="southdirection" />
     </exit>
-    <exit alias="north" to="Castle">
+    <exit name="CastleGate" alias="north" to="Castle">
       <inherit name="northdirection" />
+      <locked />
     </exit>
-  </object>
-  <object name="Gate Guard">
-    <inherit name="editor_object" />
-    <inherit name="namedmale" />
-    <inherit name="talkingchar" />
-    <guarding type="boolean">false</guarding>
-    <movetype>Forgetful</movetype>
-    <greet type="script">
-      msg ("No one beyond this point.")
-    </greet>
-    <object name="guard_gate">
+    <object name="Gate Guard">
       <inherit name="editor_object" />
+      <inherit name="namedmale" />
+      <inherit name="talkingchar" />
+      <guarding type="boolean">false</guarding>
+      <movetype>Forgetful</movetype>
+      <look>A scary gate guard who looks upset at you.</look>
+      <greet type="script">
+        msg ("Hault! No one past!")
+      </greet>
+      <hideafter type="boolean">false</hideafter>
+      <talk type="script">
+        msg ("I will not let you past. I need to afford a ring for my wife. Overtime should do it.")
+      </talk>
+      <feature_usegive />
+      <useon type="scriptdictionary">
+        <item key="Black Ring">
+          if (Got(Black Ring)) {
+            UnlockExit (CastleGate)
+            msg ("Thank you. Go on. The King and Queen await you. They may kill you though.")
+          }
+          else {
+            msg ("Go!")
+          }
+        </item>
+      </useon>
+      <object name="guard_gate">
+        <inherit name="editor_object" />
+        <inherit name="startingtopic" />
+        <talk type="script">
+          msg ("I will not let you past. I need to afford a ring for my wife. Overtime should do it.")
+        </talk>
+        <alias>Gate</alias>
+        <hideafter type="boolean">false</hideafter>
+      </object>
     </object>
   </object>
   <object name="Castle">
     <inherit name="editor_room" />
+    <inherit name="gridborder_path_s" />
     <description>The room is funished in pelts and horns of long dead animal types. Two women sit on a large thrown, shaped more like a couch. They lay together. Both had bright silver hair. One seemed to be sleeping in the pile of furrs and soft things they had gathered upon their thrown. One, the awake one, had a gold crown. The one alseep seemed to dawn a silver crown to match her hair.</description>
     <attr name="grid_label">Castle</attr>
     <object name="Queen">
@@ -349,11 +465,18 @@
       <greet type="script">
         msg ("Who are you?")
       </greet>
+      <object name="king_rawr">
+        <inherit name="editor_object" />
+        <inherit name="startingtopic" />
+        <hideafter type="boolean">false</hideafter>
+        <talk type="script">
+        </talk>
+      </object>
     </object>
     <exit alias="south" to="f_City2">
       <inherit name="southdirection" />
     </exit>
-    <exit alias="north" to="Castle">
+    <exit alias="Throne" to="Castle">
       <inherit name="northdirection" />
       <lookonly />
       <look>A large thrown with two women on it. Its made with animal skins from long dead spieces. </look>
@@ -371,4 +494,51 @@
       <inherit name="downdirection" />
     </exit>
   </object>
+  <object name="f_InnStockroom">
+    <inherit name="editor_room" />
+    <inherit name="shop_location" />
+    <buys type="boolean">false</buys>
+    <shopstock type="object">f_Inn</shopstock>
+    <object name="Ericson">
+      <inherit name="editor_object" />
+      <inherit name="edible" />
+      <inherit name="merchandise" />
+      <take />
+      <feature_usegive />
+      <feature_edible />
+      <use />
+      <eathealth type="int">10</eathealth>
+      <price type="int">10</price>
+      <givesingle />
+    </object>
+  </object>
+  <object name="f_Bedroom">
+    <inherit name="editor_room" />
+    <inherit name="gridborder_path_e" />
+    <description>A simple bed and table. The bed looks cozy and nice. A little morsel of food is on the table.</description>
+    <alias>Bedroom</alias>
+    <exit alias="east" to="f_Inn">
+      <inherit name="eastdirection" />
+    </exit>
+    <object name="Inn_bed">
+      <inherit name="editor_object" />
+      <alias>Bed</alias>
+      <scenery />
+      <lie type="script">
+        msg ("You sleep for a few hours.")
+        IncreaseHealth (10)
+      </lie>
+    </object>
+    <object name="Food">
+      <inherit name="editor_object" />
+      <attr name="feature_usegive" type="boolean">false</attr>
+      <use type="boolean">false</use>
+      <eat type="script">
+        IncreaseHealth (5)
+      </eat>
+    </object>
+  </object>
+  <function name="PointsLeft" type="int">
+    return (game.pov.maxpoints - TotalAttributes())
+  </function>
 </asl>
