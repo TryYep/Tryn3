@@ -1,0 +1,252 @@
+<?xml version="1.0"?>
+<library>
+
+  <!--
+  ShopLib is a basic shopping library for Quest.
+  
+  Requires: ScopeLib
+  
+  
+  There are two types of goods handled by this library:
+  
+  multi_merchandise: Items of this type are cloned when the player buys them, and destroyed when he sells them.
+  He can therefore buy as many as he wants. These items must be in the inventory (and must only start the game in
+  shop inventories).
+  
+  oneoff_merchandise: When the player buys one of these, it is moved to him, and therefore no longer available
+  for sale. When he sells it, it will then be offered for sale again. These items must be in the stock to be available to buy,
+  but can be found and taken anywhere in the game world.
+  
+  If an object is not of one of these types, the player will not be able to buy or sell it. Also, if it does not have a price attribute,
+  the player will not be able to buy or sell it.
+  
+  
+  How to use:
+
+  Set a string on the game object called currency or precurrency.
+  The value of precurrency will go before the value, currency will go after it.
+  
+  Set an integer on the player object called gold; this will be the money she starts with.
+  
+  Set up rooms to hold inventory and stock. Remember, inventory is for items that will be cloned, stock is for one-off items. There
+  should be no exits going to or from these rooms.
+  
+  Set up one locations as your shop. You can set this to be of the "shop_location"  type, but it is not necessary. To allow the shop
+  to buy goods from the player, you must set a boolean called "buys" to true.
+  
+  Set up objects to be of type "multi_merchandise" or "oneoff_merchandise" and give them a price
+  
+  The description of the shop can include a call to ShopInventory; a list of goods with prices will be displayed.
+  msg (ShopInventory ())
+  
+  
+  The player can type BUY [obj] to make a purchase, or just BUY to select from a menu. Sellable items should have a sell option
+  in the inventory pane, or the player can type SELL [obj].
+  
+  
+  NOTE:  You can have as many shops as you want, and they can all use the same inventory room, but each should have its own stock room.
+  Both stock room and inventory are optional. If a shop has no stock room, the player will be unable to sell anything there.
+  If it has neither, it will not be considered a shop.
+  
+  NOTE: It was developed with an RPG type game in mind, and to some degree the design
+  reflects that.
+  
+  NOTE: Goods are sold at one half the buying price.
+    
+  NOTE: The UpdateInventoryCounts function is called after each transaction; it currentky does nothing, but it can be overwritten in your
+  game to update a status attribute or whatever to show hom much cash the player currently has.
+  
+  
+  Healing potions:
+  
+  If you set the Boolean attribute "sellshealing" on the shop to true, it will sell (but not buy) healing potions (this is the default for
+  the "shop_location" type). This is not straightforward, but the basics are that you need a single object called healing_potion_impl
+  that represents all healing potions, an int on the game object called "healingpotioncost" and an int on the player called "healingpotions".
+  
+  
+  Version 1.0
+  Quest version: 5.4
+  Written by: The Pixie
+  -->
+
+
+
+  <type name="shop_location">
+    <sellshealing type="boolean">true</sellshealing>
+    <buys type="boolean">true</buys>
+  </type>
+
+  <type name="merchandise">
+    <inventoryverbs type="stringlist">
+      <value>Look at</value>
+      <value>Drop</value>
+      <value>Sell</value>
+    </inventoryverbs>
+  </type>
+
+  <type name="oneoff_merchandise">
+    <inherit name="merchandise"/>
+	  <buy type="script"><![CDATA[
+	    if (not HasInt (this, "price")) {
+	      msg ("Sorry the " + GetDisplayAlias(this) + " is not for sale.")
+	    }
+	    else if (this.price > game.pov.gold) {
+	      msg ("You look longingly at the " + GetDisplayAlias(this) + ", but you cannot afford it.")
+	    }
+	    else {
+	      this.parent = game.pov
+	      game.pov.gold = game.pov.gold - this.price
+	      UpdateInventoryCounts
+	      msg ("You buy the " + GetDisplayAlias(this) + " for " + GetPrice (this.price) + ".")
+	    }
+	    //return (0)
+	  ]]></buy>
+  </type>
+
+  <type name="multi_merchandise">
+    <inherit name="merchandise"/>
+	  <buy type="script"><![CDATA[
+	    if (not HasInt (this, "price")) {
+	      msg ("Sorry the " + GetDisplayAlias(this) + " is not for sale.")
+	    }
+	    else if (this.price > game.pov.gold) {
+	      msg ("You look longingly at the " + GetDisplayAlias(this) + ", but you cannot afford it.")
+	    }
+	    else {
+        obj = Clone (this)
+        game.pov.gold = game.pov.gold - obj.price
+        obj.parent = game.pov
+	      UpdateInventoryCounts
+	      msg ("You buy the " + GetDisplayAlias(this) + " for " + GetPrice (this.price) + ".")
+	    }
+	    //return (0)
+	  ]]></buy>
+  </type>
+
+
+
+  <command name="buystuff">
+    <pattern>buy #text#;purchase #text#</pattern>
+    <script><![CDATA[
+      if (not HasObject(game.pov.parent, "shopinv") and not HasObject(game.pov.parent, "shopstock")) {
+        msg ("Where do you think you are, a shop or something?")
+      }
+      else if (IsRegexMatch ("healing", text) and GetBoolean (game.pov.parent, "sellshealing")) {
+        if (player.gold < game.healingpotioncost) {
+          msg ("You wonder how you can get enough money to buy a healing potion.")
+        }
+        else {
+          player.healingpotions = player.healingpotions + 1
+          player.gold = player.gold - game.healingpotioncost
+          UpdateInventoryCounts
+          msg ("You buy a healing potion for " + GetPrice (game.healingpotioncost) + ".")
+        }
+      }
+      else {
+        ProcessScopeCommand ("buy", GetStock (), text, "You cannot see that for sale here", "That's not something you can buy")
+      }
+    ]]></script>
+  </command>
+  
+  <command name="buyfrommenu">
+    <pattern type="string">^buy$|^purchase$</pattern>
+    <script>
+      if (not HasObject(game.pov.parent, "shopinv") and not HasObject(game.pov.parent, "shopstock")) {
+        msg ("Where do you think you are, a shop or something?")
+      }
+      else {
+        sl = NewStringDictionary ()
+        foreach (obj, GetStock ()) {
+          dictionary add (sl, obj.name, GetDisplayAlias (obj) + " (" + GetPrice (obj.price) + ")")
+        }
+        show menu ("Item to purchase", sl, true) {
+          if (not result = null) {
+            obj = GetObject (result)
+            do (obj, "buy")
+          }
+        } 
+      }
+    </script>
+  </command>
+
+ 
+  <command name="sellstuff">
+    <pattern>sell #object#</pattern>
+    <script>
+      if (not object.parent = game.pov) {
+        msg ("You do not have the " + GetDisplayAlias (object) + ".")
+      }
+      else if (not HasObject(game.pov.parent, "shopinv") and not HasObject(game.pov.parent, "shopstock")) {
+        msg ("Where do you think you are, a shop or something?")
+      }
+      else if (not HasObject(game.pov.parent, "shopinv") or not GetBoolean(game.pov.parent, "buys")) {
+        msg ("You cannot sell things here - only buy.")
+      }
+      else if (not HasInt(object, "price")) {
+        msg ("No one wants to buy the " + GetDisplayAlias (object) + ".")
+      }
+      else {
+        game.pov.gold = game.pov.gold + object.price / 2
+        msg ("You sell the " + GetDisplayAlias(object) + " for " + GetPrice (object.price / 2) + ".")
+        if (GetBoolean (object, "cloneme")) {
+          destroy (object.name)
+        }
+        else {
+          object.parent = game.pov.parent.shopinv
+        }
+        UpdateInventoryCounts
+      }
+    </script>
+    <unresolved>You want to sell what?</unresolved>
+  </command>
+  
+  
+  <function name="ShopInventory" type="string">
+    sl = NewStringList ()
+    foreach (obj, GetStock ()) {
+      list add (sl, GetDisplayAlias (obj) + " (" + GetPrice (obj.price) + " gp)")
+    }
+    return ("For sale here: " + Join (sl, ", ") + ".")
+  </function>
+
+
+  <function name="GetStock" type="objectlist">
+    ol = NewObjectList ()
+    if (HasObject (game.pov.parent, "shopinv")) {
+      foreach (obj, GetDirectChildren (game.pov.parent.shopinv)) {
+        if (DoesInherit (obj, "multi_merchandise") and HasInt (obj, "price")) {
+          list add (ol, obj)
+        }
+      }
+    }
+    if (HasObject (game.pov.parent, "shopstock")) {
+      foreach (obj, GetDirectChildren (game.pov.parent.shopstock)) {
+        if (DoesInherit (obj, "oneoff_merchandise") and HasInt (obj, "price")) {
+          list add (ol, obj)
+        }
+      }
+    }
+    if (GetBoolean (game.pov.parent, "sellshealing")) {
+      list add (ol, healing_potion_impl)
+    }
+    return (ol)
+  </function>
+  
+  <function name="GetPrice" parameters="price" type="string">
+    if (HasString (game, "precurrency")) {
+      s = game.precurrency + price
+    }
+    else {
+      s = "" + price
+    }
+    if  (HasString (game, "currency")) {
+      s = s + " " + game.currency
+    }
+    return (s)
+  </function>
+
+
+  <function name="UpdateInventoryCounts"><![CDATA[
+  ]]></function>
+
+</library>
