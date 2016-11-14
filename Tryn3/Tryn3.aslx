@@ -1,4 +1,4 @@
-<!--Saved by Quest 5.6.6108.15891-->
+<!--Saved by Quest 5.6.5783.24153-->
 <asl version="550">
   <include ref="English.aslx" />
   <include ref="Core.aslx" />
@@ -219,6 +219,17 @@
     <exit alias="east" to="f_Wasteland">
       <inherit name="eastdirection" />
     </exit>
+    <object name="Mutated Rabbit">
+      <inherit name="editor_object" />
+      <look>It twitches and makes broken noises as you approch.</look>
+      <take />
+      <takemsg>You grab the rabbit and it squeals then flops over. It looks dead.</takemsg>
+      <feature_usegive />
+      <use />
+      <ontake type="script">
+      </ontake>
+      <selfuseon type="scriptdictionary" />
+    </object>
   </object>
   <object name="m_Forest">
     <inherit name="editor_room" />
@@ -327,7 +338,7 @@
       </displayverbs>
       <hideafter type="boolean">false</hideafter>
       <usedefaultprefix />
-      <alias>Abriana</alias>
+      <feature_usegive />
       <look type="script">
         msg ("Abriana smacks you")
         DecreaseHealth (5)
@@ -336,44 +347,50 @@
         msg ("I dunno")
       </askdefault>
       <greet type="script">
-        msg ("Welcome! Rooms are 5 goldpieces and I sell goods!")
+        msg ("\"Welcome! Rooms are 5 goldpieces and I sell goods!\"")
       </greet>
       <talk type="script">
         msg ("Wanna talk?")
       </talk>
       <ask type="scriptdictionary" />
       <tell type="scriptdictionary" />
+      <useon type="scriptdictionary">
+        <item key="Mutated Rabbit">
+          msg ("Abriana sadly sighs. \"My dogs were killed due to starvation. Poor things. I know the planet is dying, but I do not know how to help.\"")
+          msg ("\"You can go to the castle. I'll meet you there.\"")
+          msg ("\"Thank you traveler.\"")
+          AddToInventory (Foods)
+          AddToInventory (Food)
+        </item>
+      </useon>
       <object name="abriana_room">
         <inherit name="editor_object" />
         <inherit name="topic" />
         <inherit name="startingtopic" />
         <hideafter type="boolean">false</hideafter>
-        <alias>Room</alias>
+        <alias>Buying a room</alias>
         <nowshow type="list" />
         <talk type="script">
-          msg ("You'd like a room? It's 5 gold.")
+          msg ("\"You'd like a room? It's 5 gold.\"")
           player.gold = player.gold + -5
-          msg ("Go on to the back and sleep. There's food in the back. Come to me if you need me pup.")
+          msg ("\"Go on to the back and sleep. There's food in the back. Come to me if you need me pup.\"")
           UnlockExit (InnRoom2)
         </talk>
       </object>
       <object name="abriana_buy">
         <inherit name="editor_object" />
         <inherit name="startingtopic" />
-        <alias>Buy</alias>
+        <alias>Buying supplies</alias>
         <hideafter type="boolean">false</hideafter>
         <talk type="script">
-          msg ("You wanna switch supplies? I sell wares.")
-          Ask ("I have a crystalized rose that's black. It's the last of its kind. It's priceless. But maybe you can persuade me.") {
-            msg ("Oh hon you can't buy this.")
-          }
-          Ask ("I have some food. 5 gold per. Food is scarce. Deal with it.") {
-            msg ("Here ya go!")
-            AddToInventory (Ericson)
+          msg ("\"You wanna switch supplies? I sell wares.\"")
+          Ask ("\"I have some food. 5 gold per. Food is scarce. Deal with it. Want some?\"") {
+            msg ("\"Here ya go!\"")
+            AddToInventory (Foods)
             player.gold = player.gold + -5
           }
-          Ask ("I also have a small black ring. It's just something I found. 2 gold for it.") {
-            msg ("Here ya go!")
+          Ask ("\"I also have a small black ring. It's just something I found. 2 gold for it. Want it?\"") {
+            msg ("\"Here ya go!\"")
             AddToInventory (Black Ring)
             player.gold = player.gold + -2
           }
@@ -401,7 +418,7 @@
     <exit alias="south" to="f_City 1">
       <inherit name="southdirection" />
     </exit>
-    <exit name="CastleGate" alias="north" to="Castle">
+    <exit name="CastleGate" alias="north" to="f_Castle">
       <inherit name="northdirection" />
       <locked />
     </exit>
@@ -412,14 +429,14 @@
       <guarding type="boolean">false</guarding>
       <movetype>Forgetful</movetype>
       <look>A scary gate guard who looks upset at you.</look>
+      <hideafter type="boolean">false</hideafter>
+      <feature_usegive />
       <greet type="script">
         msg ("Hault! No one past!")
       </greet>
-      <hideafter type="boolean">false</hideafter>
       <talk type="script">
         msg ("I will not let you past. I need to afford a ring for my wife. Overtime should do it.")
       </talk>
-      <feature_usegive />
       <useon type="scriptdictionary">
         <item key="Black Ring">
           if (Got(Black Ring)) {
@@ -430,76 +447,193 @@
             msg ("Go!")
           }
         </item>
+        <item key="Mutated Rabbit">
+          msg ("The guard watches. \"I know things are dying, but I thought the King and Queen would solve it...\"")
+          msg ("\"If you wanna join the fight, then head into the Castle.\"")
+        </item>
       </useon>
       <object name="guard_gate">
         <inherit name="editor_object" />
         <inherit name="startingtopic" />
+        <alias>Gate</alias>
+        <hideafter type="boolean">false</hideafter>
         <talk type="script">
           msg ("I will not let you past. I need to afford a ring for my wife. Overtime should do it.")
         </talk>
-        <alias>Gate</alias>
-        <hideafter type="boolean">false</hideafter>
       </object>
     </object>
   </object>
-  <object name="Castle">
+  <object name="f_Castle">
     <inherit name="editor_room" />
     <inherit name="gridborder_path_s" />
-    <description>The room is funished in pelts and horns of long dead animal types. Two women sit on a large thrown, shaped more like a couch. They lay together. Both had bright silver hair. One seemed to be sleeping in the pile of furrs and soft things they had gathered upon their thrown. One, the awake one, had a gold crown. The one alseep seemed to dawn a silver crown to match her hair.</description>
+    <description>The throne room.</description>
     <attr name="grid_label">Castle</attr>
+    <alias>Castle</alias>
+    <firstenter type="script">
+      msg ("The room is funished in pelts and horns of long dead animal types. Two women sit on a large thrown, shaped more like a couch. They lay together. Both had bright silver hair. One seemed to be sleeping in the pile of furrs and soft things they had gathered upon their thrown. One, the awake one, had a gold crown. The one alseep seemed to dawn a silver crown to match her hair.")
+    </firstenter>
     <object name="Queen">
       <inherit name="editor_object" />
       <inherit name="namedfemale" />
-      <look>She sleeps peacefully beside her King. The thrown looks warm and cozy.</look>
+      <inherit name="monsterarcher" />
+      <inherit name="switchable" />
       <usedefaultprefix />
       <displayverbs type="stringlist">
         <value>Look at</value>
       </displayverbs>
-    </object>
-    <object name="King">
-      <inherit name="editor_object" />
-      <inherit name="namedfemale" />
-      <inherit name="talkingchar" />
-      <usedefaultprefix />
-      <look><![CDATA[She is the king. She has a gold crown and green eyes. She looks <i>very</i> mad.]]></look>
-      <greet type="script">
-        msg ("Who are you?")
-      </greet>
-      <object name="king_rawr">
-        <inherit name="editor_object" />
-        <inherit name="startingtopic" />
-        <hideafter type="boolean">false</hideafter>
-        <talk type="script">
-        </talk>
-      </object>
+      <lookwhendead>A crown, now stained red, lays beside her.</lookwhendead>
+      <level type="int">1</level>
+      <hitpoints type="int">0</hitpoints>
+      <feature_switchable />
+      <switchoffmsg>The queen is alseep</switchoffmsg>
+      <switchonmsg>The queen is awake</switchonmsg>
+      <nonweapon />
+      <attackasgroup type="boolean">false</attackasgroup>
+      <look type="script">
+        if (IsSwitchedOn(Queen)) {
+          msg ("She watches you carefully.")
+        }
+        else {
+          msg ("She sleeps peacefully beside her King. The thrown looks warm and cozy.")
+        }
+      </look>
+      <attack type="script">
+        this.temp_db = 0
+        this.temp_ob_now = 0
+        this.temp_ob_next = 0
+        this.temp_damage = 0
+        this.temp_desc = "You swing your"
+        do (this, "doattack")
+        DecreaseHealth (10)
+      </attack>
+      <onswitchon type="script">
+        msg ("She watches you and growls softly. Her crimson eyes looking terrified.")
+      </onswitchon>
     </object>
     <exit alias="south" to="f_City2">
       <inherit name="southdirection" />
     </exit>
-    <exit alias="Throne" to="Castle">
+    <exit alias="Throne" to="f_Castle">
       <inherit name="northdirection" />
       <lookonly />
       <look>A large thrown with two women on it. Its made with animal skins from long dead spieces. </look>
     </exit>
-    <exit alias="up" to="Tower">
+    <exit alias="up" to="f_Tower">
       <inherit name="updirection" />
     </exit>
+    <object name="King">
+      <inherit name="editor_object" />
+      <inherit name="namedfemale" />
+      <inherit name="talkingchar" />
+      <inherit name="monsterarcher" />
+      <usedefaultprefix />
+      <look><![CDATA[She is the king. She has a gold crown and green eyes. She looks <i>very</i> mad.]]></look>
+      <level type="int">2</level>
+      <hitpoints type="int">1</hitpoints>
+      <attackasgroup />
+      <nonweapon />
+      <displayverbs type="stringlist">
+        <value>Look at</value>
+        <value>Attack</value>
+        <value>Speak to</value>
+      </displayverbs>
+      <feature_usegive />
+      <death>You rule as king from now on. Will the world flurish or die under your mighty rule? You deicde.</death>
+      <greet type="script">
+        msg ("I demand to know why you are here peasant!")
+      </greet>
+      <attack type="script">
+        this.temp_db = 0
+        this.temp_ob_now = 0
+        this.temp_ob_next = 0
+        this.temp_damage = 0
+        this.temp_desc = "You swing your"
+        do (this, "doattack")
+        DecreaseHealth (15)
+      </attack>
+      <useanything type="script">
+        msg ("You're dumb.")
+      </useanything>
+      <useon type="scriptdictionary">
+        <item key="Mutated Rabbit">
+          msg ("\"What is this?!\"")
+          msg ("\"A mutated rabbit King. We need to fix things.\"")
+          msg ("The King looks at the Queen, who is now awake. They lock eyes.")
+          if (random chance (50)) {
+            msg ("\"Fine Fine, I will happily fix whatever I can to fix everything. But we must be cautious. I'd love to help. We will all partious otherwise. \"")
+            finish
+          }
+          else {
+            msg ("\"You are a fool! I refuse! We will all die if we cannot hunt. The soil is too dry to grow foods. Our brothern left us for a reason. We will die!\"")
+            wait {
+              msg ("Go away. We will not change our policies. I'd rather die then allow you to order me!")
+            }
+          }
+        </item>
+      </useon>
+      <object name="king_rawr">
+        <inherit name="editor_object" />
+        <inherit name="startingtopic" />
+        <hideafter type="boolean">false</hideafter>
+        <alias>What's happening?</alias>
+        <talk type="script">
+          msg ("\"What do you mean?\"")
+          msg ("You tell her you want to help with the world.")
+          msg ("\"Then go see the wizard upstairs. You're disruptioning my love's sleep.\"")
+          SetObjectFlagOn (Queen, "On")
+        </talk>
+      </object>
+    </object>
   </object>
-  <object name="Tower">
+  <object name="f_Tower">
     <inherit name="editor_room" />
     <inherit name="gridborder_path_e" />
     <description>There's a tower with a mighty wizard within. He's crazy, but amazingly smart.</description>
     <attr name="grid_label">Tower</attr>
-    <exit alias="down" to="Castle">
+    <alias>Tower</alias>
+    <exit alias="down" to="f_Castle">
       <inherit name="downdirection" />
     </exit>
+    <object name="Keaton the Great Crazy One">
+      <inherit name="editor_object" />
+      <inherit name="namedmale" />
+      <inherit name="talkingchar" />
+      <usedefaultprefix />
+      <look>Scrappy man who looks like Rasputin.</look>
+      <drop type="boolean">false</drop>
+      <feature_usegive />
+      <greet type="script">
+      </greet>
+      <give type="scriptdictionary" />
+      <useon type="scriptdictionary">
+        <item key="Mutated Rabbit">
+          if (Got(Mutated Rabbit)) {
+            msg ("\"YOU HAVE IT!!\"")
+            msg ("\"You need to show this rabbit to the people. Show the queen and king. They know all is not well. The people feel it. They will demand that things be righted. Now go.\"")
+          }
+          else {
+            msg ("\"Go away!\"")
+          }
+        </item>
+      </useon>
+      <object name="keaton_spooked">
+        <inherit name="editor_object" />
+        <inherit name="startingtopic" />
+        <alias>Poke him and speak to him</alias>
+        <talk type="script"><![CDATA[
+          msg ("You poke the crazy man and and screams a squeal so loud it gives you a headache.")
+          msg ("The man looks at you. \"wHat ArE YoU doINg?\"")
+          msg ("You answer and tell him that the King sent you up.<br/>Keaton looks at you. \"So you want to help... Then go get me a mutated rabbit. I need to see it to perfect my idea. Go on now. Bye.\"<br/>He goes off to dork around more.")
+        ]]></talk>
+      </object>
+    </object>
   </object>
   <object name="f_InnStockroom">
     <inherit name="editor_room" />
     <inherit name="shop_location" />
     <buys type="boolean">false</buys>
     <shopstock type="object">f_Inn</shopstock>
-    <object name="Ericson">
+    <object name="Foods">
       <inherit name="editor_object" />
       <inherit name="edible" />
       <inherit name="merchandise" />

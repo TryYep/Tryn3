@@ -12,3 +12,9 @@
 [1031/181627:WARNING:message_in_transit_queue.cc(18)] Destroying nonempty message queue
 [1102/125740:WARNING:message_in_transit_queue.cc(18)] Destroying nonempty message queue
 [1102/144445:WARNING:message_in_transit_queue.cc(18)] Destroying nonempty message queue
+[1108/131945:WARNING:message_in_transit_queue.cc(18)] Destroying nonempty message queue
+[1108/131945:ERROR:gpu_process_transport_factory.cc(437)] Failed to establish GPU channel.
+[1112/103803:WARNING:message_in_transit_queue.cc(18)] Destroying nonempty message queue
+[1112/144103:WARNING:message_in_transit_queue.cc(18)] Destroying nonempty message queue
+[1112/150201:WARNING:message_in_transit_queue.cc(18)] Destroying nonempty message queue
+[1112/153635:WARNING:message_in_transit_queue.cc(18)] Destroying nonempty message queue
